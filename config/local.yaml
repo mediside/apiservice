@@ -1,0 +1,12 @@
+env: "local"
+domain: "localhost:9042"
+db:
+  host: ""
+  port: ""
+  user: ""
+  name: ""
+  password: ""
+redis:
+  host: ""
+  port: ""
+  password: ""
