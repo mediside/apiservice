@@ -1,12 +1,14 @@
 env: "local"
-domain: "localhost:9042"
-db:
-  host: ""
-  port: ""
-  user: ""
-  name: ""
-  password: ""
+http:
+  host: localhost
+  port: 9042
+postgres:
+  host: "localhost"
+  port: "9432"
+  name: "med"
+  user: "postgres"
+  password: "postgres"
 redis:
-  host: ""
-  port: ""
+  host: "localhost"
+  port: "9379"
   password: ""

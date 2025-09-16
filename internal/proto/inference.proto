@@ -1,0 +1,19 @@
+syntax = "proto3";
+package inference;
+option go_package = "inference.v1;inferencev1";
+
+service Inference {
+  rpc DoInference(InferenceRequest) returns (InferenceResponse);
+}
+
+message ConnectRequest {
+}
+
+message InferenceRequest {
+  string file_path = 1;
+  string model = 2;
+}
+
+message InferenceResponse {
+
+}

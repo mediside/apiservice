@@ -11,8 +11,29 @@ import (
 const configPathEnv = "CONFIG_PATH"
 
 type Config struct {
-	Env    string `yaml:"env" env:"ENV"`
-	Domain string `yaml:"domain" env:"DOMAIN"`
+	Env      string         `yaml:"env" env:"ENV"`
+	Http     httpConfig     `yaml:"http" env:"DOMAIN"`
+	Postgres postgresConfig `yaml:"postgres"`
+	Redis    redisConfig    `yaml:"redis"`
+}
+
+type httpConfig struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
+}
+
+type postgresConfig struct {
+	Host     string `yaml:"host" env:"DATABASE_HOST"`
+	Port     string `yaml:"port" env:"DATABASE_PORT"`
+	Name     string `yaml:"name" env:"DATABASE_NAME"`
+	User     string `yaml:"user" env:"DATABASE_USER"`
+	Password string `yaml:"password" env:"DATABASE_PASSWORD"`
+}
+
+type redisConfig struct {
+	Host     string `yaml:"host" env:"REDIS_HOST"`
+	Port     string `yaml:"port" env:"REDIS_PORT"`
+	Password string `yaml:"password" env:"REDIS_PASSWORD"`
 }
 
 func MustLoad() *Config {
