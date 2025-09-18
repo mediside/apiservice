@@ -1,1 +1,14 @@
 env: "prod"
+http:
+  host: 0.0.0.0
+  port: 9042
+postgres:
+  host: postgres
+  port: 5432
+  name: med
+  user: postgres
+  password: postgres
+redis:
+  host: redis
+  port: 6379
+  password: ""

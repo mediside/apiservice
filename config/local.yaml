@@ -3,12 +3,12 @@ http:
   host: localhost
   port: 9042
 postgres:
-  host: "localhost"
-  port: "9432"
-  name: "med"
-  user: "postgres"
-  password: "postgres"
+  host: localhost
+  port: 9432
+  name: med
+  user: postgres
+  password: postgres
 redis:
-  host: "localhost"
-  port: "9379"
+  host: localhost
+  port: 9379
   password: ""

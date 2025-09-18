@@ -46,11 +46,11 @@ func connectPostgres(cfg *config.Config) *sql.DB {
 
 	db, err := sql.Open("postgres", dbOptions)
 	if err != nil {
-		log.Fatalf("can't open db: %s", err.Error())
+		log.Fatalf("can't open postgres: %s", err.Error())
 	}
 
 	if err = db.Ping(); err != nil {
-		log.Fatalf("can't ping db: %s", err.Error())
+		log.Fatalf("can't ping postgres: %s", err.Error())
 	}
 
 	return db
@@ -66,7 +66,7 @@ func connectCache(cfg *config.Config) *redis.Client {
 	rdb := redis.NewClient(rdbOptions)
 
 	if _, err := rdb.Ping(context.TODO()).Result(); err != nil {
-		log.Fatalf("can't ping cache: %s", err.Error())
+		log.Fatalf("can't ping redis: %s", err.Error())
 	}
 
 	return rdb
