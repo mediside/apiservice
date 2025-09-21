@@ -10,6 +10,7 @@ import (
 type ResearchProvider interface {
 	Create() (research.Research, error)
 	Delete(id string) error
+	List() ([]research.Research, error)
 }
 
 type ResearchHandler struct {
@@ -33,11 +34,21 @@ func (h *ResearchHandler) Add(ctx *gin.Context) {
 }
 
 func (h *ResearchHandler) List(ctx *gin.Context) {
+	list, err := h.researchProvider.List()
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
 
+	if len(list) == 0 { // ожидаем на фронте "[]" вместо null
+		list = []research.Research{}
+	}
+
+	ctx.JSON(http.StatusOK, list)
 }
 
 func (h *ResearchHandler) FullInfo(ctx *gin.Context) {
-
+	// TODO: использовать сервис dicom, назвать list - это уже другой обработчик
 }
 
 func (h *ResearchHandler) Delete(ctx *gin.Context) {
