@@ -4,6 +4,7 @@ import (
 	"apiservice/internal/config"
 	"apiservice/internal/domain/model"
 	"apiservice/internal/handler"
+	"apiservice/internal/service"
 	"apiservice/internal/storage"
 	"context"
 	"fmt"
@@ -21,10 +22,12 @@ func main() {
 	log.Info("starting apiservice", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
 
-	stor := storage.New(log, cfg)
-	defer stor.Close()
+	repo := storage.New(log, cfg)
+	defer repo.Close()
 
-	hand := handler.New(log, cfg)
+	serv := service.New(log, cfg, repo)
+
+	hand := handler.New(log, cfg, serv)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

@@ -1,4 +1,5 @@
 env: "prod"
+pathology_level: 0.8
 http:
   host: 0.0.0.0
   port: 9042

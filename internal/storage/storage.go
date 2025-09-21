@@ -2,6 +2,7 @@ package storage
 
 import (
 	"apiservice/internal/config"
+	"apiservice/internal/storage/research"
 	"context"
 	"database/sql"
 	"fmt"
@@ -14,8 +15,9 @@ import (
 )
 
 type Storage struct {
-	db    *sql.DB
-	cache *redis.Client
+	db              *sql.DB
+	cache           *redis.Client
+	ResearchStorage *research.ResearchStorage
 }
 
 func New(logger *slog.Logger, cfg *config.Config) Storage {
@@ -25,14 +27,18 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 	cache := connectCache(cfg)
 	logger.Info("cache connected succesfully")
 
+	resStorage := research.New(db)
+
 	return Storage{
-		db:    db,
-		cache: cache,
+		db:              db,
+		cache:           cache,
+		ResearchStorage: resStorage,
 	}
 }
 
 func (s Storage) Close() {
 	s.db.Close()
+	s.cache.Close()
 }
 
 func connectPostgres(cfg *config.Config) *sql.DB {

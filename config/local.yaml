@@ -1,4 +1,5 @@
 env: "local"
+pathology_level: 0.8
 http:
   host: localhost
   port: 9042
