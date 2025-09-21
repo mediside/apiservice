@@ -52,6 +52,13 @@ func (s *ResearchStorage) List() ([]research.Research, error) {
 	return res, nil
 }
 
+func (s *ResearchStorage) GetOne(id string) (research.Research, error) {
+	q := "SELECT * FROM researches WHERE id = $1"
+	row := s.db.QueryRow(q, id)
+
+	return s.scanRow(row.Scan)
+}
+
 func (s *ResearchStorage) scanRow(scanFn func(dest ...any) error) (research.Research, error) {
 	var (
 		res   research.Research

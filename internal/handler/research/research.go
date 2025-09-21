@@ -11,6 +11,7 @@ type ResearchProvider interface {
 	Create() (research.Research, error)
 	Delete(id string) error
 	List() ([]research.Research, error)
+	GetOne(id string) (research.Research, error)
 }
 
 type ResearchHandler struct {
@@ -47,8 +48,21 @@ func (h *ResearchHandler) List(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, list)
 }
 
-func (h *ResearchHandler) FullInfo(ctx *gin.Context) {
-	// TODO: использовать сервис dicom, назвать list - это уже другой обработчик
+func (h *ResearchHandler) GetOne(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if id == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "err"})
+		return
+	}
+
+	res, err := h.researchProvider.GetOne(id)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (h *ResearchHandler) Delete(ctx *gin.Context) {

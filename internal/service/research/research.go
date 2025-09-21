@@ -12,6 +12,7 @@ type ResearchProvider interface {
 	Create(id string, pathologyLevel float32) (research.Research, error)
 	Delete(id string) error
 	List() ([]research.Research, error)
+	GetOne(id string) (research.Research, error)
 }
 
 type ResearchService struct {
@@ -55,4 +56,14 @@ func (s *ResearchService) List() ([]research.Research, error) {
 	}
 
 	return list, err
+}
+
+func (s *ResearchService) GetOne(id string) (research.Research, error) {
+	res, err := s.researchProvider.GetOne(id)
+	if err != nil {
+		s.log.Error("list research", slog.String("err", err.Error()))
+		return research.Research{}, err
+	}
+
+	return res, err
 }
