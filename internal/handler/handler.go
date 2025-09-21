@@ -27,9 +27,9 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 
 	researchApi := api.Group("/researches")
 	researchApi.POST("/new", researchService.Add)
-	researchApi.GET("/")
-	researchApi.GET("/:id")
-	researchApi.DELETE("/:id")
+	researchApi.GET("", researchService.List)
+	researchApi.GET("/:id", researchService.FullInfo)
+	researchApi.DELETE("/:id", researchService.Delete)
 
 	return router
 }

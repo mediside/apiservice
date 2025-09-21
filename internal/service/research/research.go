@@ -10,6 +10,7 @@ import (
 
 type ResearchProvider interface {
 	Create(id string, pathologyLevel float32) (research.Research, error)
+	Delete(id string) error
 }
 
 type ResearchService struct {
@@ -35,4 +36,12 @@ func (s *ResearchService) Create() (research.Research, error) {
 	}
 
 	return res, nil
+}
+
+func (s *ResearchService) Delete(id string) error {
+	if err := s.researchProvider.Delete(id); err != nil {
+		s.log.Error("delete research", slog.String("err", err.Error()))
+	}
+
+	return nil
 }

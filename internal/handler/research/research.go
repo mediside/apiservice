@@ -9,6 +9,7 @@ import (
 
 type ResearchProvider interface {
 	Create() (research.Research, error)
+	Delete(id string) error
 }
 
 type ResearchHandler struct {
@@ -40,5 +41,17 @@ func (h *ResearchHandler) FullInfo(ctx *gin.Context) {
 }
 
 func (h *ResearchHandler) Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
 
+	if id == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "err"})
+		return
+	}
+
+	if err := h.researchProvider.Delete(id); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }

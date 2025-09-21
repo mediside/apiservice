@@ -24,7 +24,6 @@ func (s *ResearchStorage) Create(id string, pathologyLevel float32) (research.Re
 	)
 
 	row := s.db.QueryRow(q, id, pathologyLevel)
-
 	if err := row.Scan(&res.Id, &res.Num, &title, &res.PathologyLevel, &res.CreatedAt); err != nil {
 		return research.Research{}, err
 	}
@@ -34,4 +33,10 @@ func (s *ResearchStorage) Create(id string, pathologyLevel float32) (research.Re
 	}
 
 	return res, nil
+}
+
+func (s *ResearchStorage) Delete(id string) error {
+	q := `DELETE FROM researches WHERE id = $1`
+	_, err := s.db.Exec(q, id)
+	return err
 }
