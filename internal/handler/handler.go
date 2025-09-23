@@ -4,6 +4,7 @@ import (
 	"apiservice/internal/config"
 	"apiservice/internal/domain/model"
 	"apiservice/internal/handler/collection"
+	"apiservice/internal/handler/research"
 	"apiservice/internal/service"
 	"log/slog"
 	"net/http"
@@ -18,7 +19,8 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	collectionService := collection.New(serv.CollectionService)
+	collectionHandler := collection.New(serv.CollectionService)
+	researchHandler := research.New(serv.ResearchService)
 
 	router := gin.Default()
 
@@ -26,10 +28,13 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 	api.GET("/ping", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"success": true}) })
 
 	collectionApi := api.Group("/collections")
-	collectionApi.POST("/new", collectionService.Add)
-	collectionApi.GET("", collectionService.List)
-	collectionApi.GET("/:id", collectionService.GetOne)
-	collectionApi.DELETE("/:id", collectionService.Delete)
+	collectionApi.POST("/new", collectionHandler.Add)
+	collectionApi.GET("", collectionHandler.List)
+	collectionApi.GET("/:id", collectionHandler.GetOne)
+	collectionApi.DELETE("/:id", collectionHandler.Delete)
+
+	researchApi := api.Group(("researches"))
+	researchApi.POST("/upload", researchHandler.Upload)
 
 	return router
 }

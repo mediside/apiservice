@@ -3,11 +3,13 @@ package storage
 import (
 	"apiservice/internal/config"
 	"apiservice/internal/storage/collection"
+	"apiservice/internal/storage/research"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 
@@ -18,6 +20,7 @@ type Storage struct {
 	db                *sql.DB
 	cache             *redis.Client
 	CollectionStorage *collection.CollectionStorage
+	ResearchStorage   *research.ResearchStorage
 }
 
 func New(logger *slog.Logger, cfg *config.Config) Storage {
@@ -27,12 +30,17 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 	cache := connectCache(cfg)
 	logger.Info("cache connected succesfully")
 
+	createFileFolder(cfg.ResearchSavePath)
+	logger.Info("research save folder checked", slog.String("path", cfg.ResearchSavePath))
+
 	colStorage := collection.New(db)
+	resStorage := research.New(cfg.ResearchSavePath)
 
 	return Storage{
 		db:                db,
 		cache:             cache,
 		CollectionStorage: colStorage,
+		ResearchStorage:   resStorage,
 	}
 }
 
@@ -76,4 +84,10 @@ func connectCache(cfg *config.Config) *redis.Client {
 	}
 
 	return rdb
+}
+
+func createFileFolder(path string) {
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		log.Fatalf("can't create folder for research store: %s", err.Error())
+	}
 }
