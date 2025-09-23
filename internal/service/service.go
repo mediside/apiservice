@@ -2,20 +2,20 @@ package service
 
 import (
 	"apiservice/internal/config"
-	"apiservice/internal/service/research"
+	"apiservice/internal/service/collection"
 	"apiservice/internal/storage"
 	"log/slog"
 )
 
 type Service struct {
-	ResearchService *research.ResearchService
+	CollectionService *collection.CollectionService
 }
 
 func New(log *slog.Logger, cfg *config.Config, repo storage.Storage) Service {
 
-	res := research.New(log, cfg, repo.ResearchStorage)
+	res := collection.New(log, cfg, repo.CollectionStorage)
 
 	return Service{
-		ResearchService: res,
+		CollectionService: res,
 	}
 }

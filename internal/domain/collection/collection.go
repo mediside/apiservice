@@ -1,8 +1,8 @@
-package research
+package collection
 
 import "time"
 
-type Research struct {
+type Collection struct {
 	Id             string    `json:"id"`
 	Num            uint      `json:"num"`
 	Title          string    `json:"title"`

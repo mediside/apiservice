@@ -2,7 +2,7 @@ package storage
 
 import (
 	"apiservice/internal/config"
-	"apiservice/internal/storage/research"
+	"apiservice/internal/storage/collection"
 	"context"
 	"database/sql"
 	"fmt"
@@ -15,9 +15,9 @@ import (
 )
 
 type Storage struct {
-	db              *sql.DB
-	cache           *redis.Client
-	ResearchStorage *research.ResearchStorage
+	db                *sql.DB
+	cache             *redis.Client
+	CollectionStorage *collection.CollectionStorage
 }
 
 func New(logger *slog.Logger, cfg *config.Config) Storage {
@@ -27,12 +27,12 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 	cache := connectCache(cfg)
 	logger.Info("cache connected succesfully")
 
-	resStorage := research.New(db)
+	colStorage := collection.New(db)
 
 	return Storage{
-		db:              db,
-		cache:           cache,
-		ResearchStorage: resStorage,
+		db:                db,
+		cache:             cache,
+		CollectionStorage: colStorage,
 	}
 }
 
