@@ -43,6 +43,7 @@ func (s *CollectionService) Create() (collection.Collection, error) {
 func (s *CollectionService) Delete(id string) error {
 	if err := s.collectionProvider.Delete(id); err != nil {
 		s.log.Error("delete collection", slog.String("err", err.Error()))
+		return err
 	}
 
 	return nil
