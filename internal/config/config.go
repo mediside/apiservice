@@ -11,11 +11,12 @@ import (
 const configPathEnv = "CONFIG_PATH"
 
 type Config struct {
-	Env            string         `yaml:"env" env:"ENV"`
-	PathologyLevel float32        `yaml:"pathology_level"`
-	Http           httpConfig     `yaml:"http"`
-	Postgres       postgresConfig `yaml:"postgres"`
-	Redis          redisConfig    `yaml:"redis"`
+	Env              string         `yaml:"env" env:"ENV"`
+	PathologyLevel   float32        `yaml:"pathology_level"`
+	ResearchSavePath string         `yaml:"research_save_path"`
+	Http             httpConfig     `yaml:"http"`
+	Postgres         postgresConfig `yaml:"postgres"`
+	Redis            redisConfig    `yaml:"redis"`
 }
 
 type httpConfig struct {

@@ -1,5 +1,6 @@
 env: "prod"
 pathology_level: 0.8
+research_save_path: '/researches'
 http:
   host: 0.0.0.0
   port: 9042
