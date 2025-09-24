@@ -17,6 +17,7 @@ type Config struct {
 	Http             httpConfig     `yaml:"http"`
 	Postgres         postgresConfig `yaml:"postgres"`
 	Redis            redisConfig    `yaml:"redis"`
+	GrpcConfig       grpcConfig     `yaml:"grpc"`
 }
 
 type httpConfig struct {
@@ -36,6 +37,11 @@ type redisConfig struct {
 	Host     string `yaml:"host" env:"REDIS_HOST"`
 	Port     string `yaml:"port" env:"REDIS_PORT"`
 	Password string `yaml:"password" env:"REDIS_PASSWORD"`
+}
+
+type grpcConfig struct {
+	Host string `yaml:"host"`
+	Port uint   `yaml:"port"`
 }
 
 func MustLoad() *Config {
