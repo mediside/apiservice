@@ -1,6 +1,7 @@
 package research
 
 import (
+	"apiservice/internal/domain/research"
 	"database/sql"
 	"io"
 	"os"
@@ -18,8 +19,18 @@ func New(researchSavePath string, db *sql.DB) *ResearchStorage {
 	}
 }
 
-func (s *ResearchStorage) SaveFile(filename string, src io.Reader) error {
-	out, err := os.Create("./researches/" + filename)
+func (s *ResearchStorage) SaveFile(subfolder, filename string, src io.Reader) error {
+	folderpath := s.researchSavePath + "/" + subfolder
+	if err := os.MkdirAll(folderpath, os.ModePerm); err != nil {
+		return err
+	}
+
+	filepath := folderpath + "/" + filename
+	if _, err := os.Stat(filepath); err == nil {
+		return research.ErrFileAlreadyExists
+	}
+
+	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}

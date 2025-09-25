@@ -13,7 +13,7 @@ type InferenceProvider interface {
 }
 
 type ResearchProvider interface {
-	SaveFile(filename string, src io.Reader) error
+	SaveFile(collectionId, filename string, src io.Reader) error
 	Create(id, collectionId, filepath string) error
 }
 
@@ -34,7 +34,7 @@ func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider
 }
 
 func (s *ResearchService) RunFileProcessing(filename, collectionId string, src io.Reader) error {
-	err := s.researchProvider.SaveFile(filename, src)
+	err := s.researchProvider.SaveFile(collectionId, filename, src)
 	if err != nil {
 		s.log.Error("fail save file", slog.String("filename", filename), slog.String("err", err.Error()))
 		return err

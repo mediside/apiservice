@@ -7,7 +7,9 @@ import (
 	"apiservice/internal/storage/research"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"log/slog"
 	"os"
@@ -36,7 +38,7 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 	cache := connectRedis(cfg)
 	logger.Info("cache connected succesfully")
 
-	createFileFolder(cfg.ResearchSavePath)
+	checkResearchesFolder(cfg.ResearchSavePath)
 	logger.Info("research save folder checked", slog.String("path", cfg.ResearchSavePath))
 
 	grpcConn := connectGRPC(cfg)
@@ -97,12 +99,6 @@ func connectRedis(cfg *config.Config) *redis.Client {
 	return rdb
 }
 
-func createFileFolder(path string) {
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		log.Fatalf("can't create folder for research store: %s", err.Error())
-	}
-}
-
 func connectGRPC(cfg *config.Config) infGRPC.InferenceClient {
 	addr := fmt.Sprintf("%s:%d", cfg.GrpcConfig.Host, cfg.GrpcConfig.Port)
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -111,4 +107,21 @@ func connectGRPC(cfg *config.Config) infGRPC.InferenceClient {
 	}
 
 	return infGRPC.NewInferenceClient(conn)
+}
+
+func checkResearchesFolder(path string) {
+	if ex, err := exists(path); err != nil || !ex {
+		log.Fatalf("folder %s not exists: %s", path, err.Error()) // volume в контейнере должен быть смонтирован
+	}
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
 }
