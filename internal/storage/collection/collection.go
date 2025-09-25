@@ -51,10 +51,22 @@ func (s *CollectionStorage) List() ([]collection.Collection, error) {
 	return res, nil
 }
 
+func (s *CollectionStorage) CheckExists(id string) (bool, error) {
+	q := "SELECT EXISTS(SELECT 1 FROM collections WHERE id = $1)"
+	row := s.db.QueryRow(q, id)
+
+	var exists bool
+	err := row.Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
 func (s *CollectionStorage) GetOne(id string) (collection.Collection, error) {
 	q := "SELECT * FROM collections WHERE id = $1"
 	row := s.db.QueryRow(q, id)
-
 	return s.scanRow(row.Scan)
 }
 

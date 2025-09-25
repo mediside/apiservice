@@ -1,17 +1,20 @@
 package research
 
 import (
+	"database/sql"
 	"io"
 	"os"
 )
 
 type ResearchStorage struct {
 	researchSavePath string
+	db               *sql.DB
 }
 
-func New(researchSavePath string) *ResearchStorage {
+func New(researchSavePath string, db *sql.DB) *ResearchStorage {
 	return &ResearchStorage{
 		researchSavePath: researchSavePath,
+		db:               db,
 	}
 }
 
@@ -27,4 +30,10 @@ func (s *ResearchStorage) SaveFile(filename string, src io.Reader) error {
 	}
 
 	return nil
+}
+
+func (s *ResearchStorage) Create(id, collectionId, filepath string) error {
+	q := `INSERT INTO collections (id,collection_id,file_path) VALUES ($1,$2,$3)`
+	_, err := s.db.Exec(q, id, collectionId, filepath)
+	return err
 }

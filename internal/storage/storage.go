@@ -43,7 +43,7 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 	logger.Info("create gRPC connection succesfully")
 
 	colStorage := collection.New(db)
-	resStorage := research.New(cfg.ResearchSavePath)
+	resStorage := research.New(cfg.ResearchSavePath, db)
 	infStorage := inference.New(grpcConn)
 
 	return Storage{

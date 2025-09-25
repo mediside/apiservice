@@ -20,7 +20,7 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 	}
 
 	collectionHandler := collection.New(serv.CollectionService)
-	researchHandler := research.New(serv.ResearchService)
+	researchHandler := research.New(serv.ResearchService, serv.CollectionService)
 
 	router := gin.Default()
 

@@ -13,6 +13,7 @@ type CollectionProvider interface {
 	Delete(id string) error
 	List() ([]collection.Collection, error)
 	GetOne(id string) (collection.Collection, error)
+	CheckExists(id string) (bool, error)
 }
 
 type CollectionService struct {
@@ -67,4 +68,14 @@ func (s *CollectionService) GetOne(id string) (collection.Collection, error) {
 	}
 
 	return res, err
+}
+
+func (s *CollectionService) CheckExists(id string) (bool, error) {
+	exists, err := s.collectionProvider.CheckExists(id)
+	if err != nil {
+		s.log.Error("check exists", slog.String("id", id), slog.String("err", err.Error()))
+		return false, err
+	}
+
+	return exists, nil
 }
