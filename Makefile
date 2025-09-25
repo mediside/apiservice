@@ -6,8 +6,9 @@ proto_dir         = internal/proto
 proto_build_dir   = internal/gen/go/inference
 
 
-# 
-# 
+# export GOPATH=$HOME/go
+# export GOBIN=$GOPATH/bin
+# export PATH=$PATH:$GOROOT:$GOPATH:$GOBIN
 compile-proto:
 	protoc -I$(proto_dir) \
 	--proto_path=$(proto_dir) \

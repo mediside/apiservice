@@ -16,4 +16,4 @@ redis:
   password: ""
 grpc:
   host: localhost
-  port: 33042
+  port: 30042

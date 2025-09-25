@@ -16,4 +16,4 @@ redis:
   password: ""
 grpc:
   host: inference
-  port: 33042
+  port: 30042
