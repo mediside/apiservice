@@ -16,7 +16,7 @@ type Service struct {
 func New(log *slog.Logger, cfg *config.Config, repo storage.Storage) Service {
 
 	col := collection.New(log, cfg, repo.CollectionStorage)
-	res := research.New(log, cfg, repo.ResearchStorage)
+	res := research.New(log, cfg, repo.ResearchStorage, repo.InferenceStorage)
 
 	return Service{
 		CollectionService: col,
