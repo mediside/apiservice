@@ -28,6 +28,6 @@ CREATE TABLE IF NOT EXISTS
 
 -- +goose Down
 -- +goose StatementBegin
+DROP TABLE dicoms;
 DROP TABLE researches;
-DROP TABLE DICOMS;
 -- +goose StatementEnd
