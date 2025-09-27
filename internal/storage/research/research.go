@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"io"
 	"os"
+	"time"
 )
 
 type ResearchStorage struct {
@@ -44,7 +45,13 @@ func (s *ResearchStorage) SaveFile(subfolder, filename string, src io.Reader) er
 }
 
 func (s *ResearchStorage) Create(id, collectionId, filepath string) error {
-	q := `INSERT INTO collections (id,collection_id,file_path) VALUES ($1,$2,$3)`
+	q := "INSERT INTO researches (id,collection_id,file_path) VALUES ($1,$2,$3)"
 	_, err := s.db.Exec(q, id, collectionId, filepath)
+	return err
+}
+
+func (s *ResearchStorage) WriteInferenceResult(id string, probabilityOfPathology float32, finishedAt time.Time) error {
+	q := "UPDATE researches SET probability_of_pathology = $2, processing_finished_at = $3 WHERE id = $1"
+	_, err := s.db.Exec(q, id, probabilityOfPathology, finishedAt)
 	return err
 }

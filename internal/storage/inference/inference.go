@@ -1,10 +1,9 @@
 package inference
 
 import (
-	infDom "apiservice/internal/domain/inference"
+	"apiservice/internal/domain/inference"
 	infGRPC "apiservice/internal/gen/go/inference/inference.v1"
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -18,7 +17,7 @@ func New(client infGRPC.InferenceClient) *InferenceStorage {
 	}
 }
 
-func (s *InferenceStorage) DoInference(filepath string) error {
+func (s *InferenceStorage) DoInference(responseCh chan<- inference.InferenceResponse, filepath string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
@@ -35,12 +34,18 @@ func (s *InferenceStorage) DoInference(filepath string) error {
 
 		switch payload := resp.Payload.(type) {
 		case *infGRPC.InferenceResponse_Progress:
-			fmt.Printf("Прогресс: %v\n", payload.Progress) // TODO: channels
+			responseCh <- inference.InferenceResponse{
+				Percent: uint(payload.Progress.Percent),
+				Step:    payload.Progress.Step,
+			}
 		case *infGRPC.InferenceResponse_Result:
-			fmt.Printf("Результат: %v\n", payload.Result) // TODO: channels
-			return nil                                    // прерываем цикл
+			responseCh <- inference.InferenceResponse{
+				ProbabilityOfPathology: payload.Result.ProbabilityOfPathology,
+				Done:                   true,
+			}
+			return nil // прерываем цикл
 		default:
-			return infDom.ErrGrpcUnknown // TODO: channels
+			return inference.ErrGrpcUnknown
 		}
 	}
 }
