@@ -25,6 +25,7 @@ type ResearchProvider interface {
 	WriteInferenceResult(id string, probabilityOfPathology float32) error
 	WriteInferenceError(id, inferenceErr string) error
 	WriteInferenceFinishTime(id string, finishedAt time.Time) error
+	WriteInferenceStartTime(id string, startedAt time.Time) error
 	WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error
 	MarkCorrupted(id string) error
 }
@@ -170,6 +171,11 @@ func (s *ResearchService) inferenceWorker() {
 
 	for t := range s.taskCh {
 		s.log.Info("start inference", slog.String("filepath", t.Filepath))
+		startedAt := time.Now().UTC()
+		if err := s.researchProvider.WriteInferenceStartTime(t.ResearchId, startedAt); err != nil {
+			s.log.Error("fail write inference start time in db", slog.String("err", err.Error()))
+		}
+
 		responseCh := make(chan inference.InferenceResponse)
 
 		go func() {

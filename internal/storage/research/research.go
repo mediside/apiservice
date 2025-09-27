@@ -68,6 +68,12 @@ func (s *ResearchStorage) WriteInferenceFinishTime(id string, finishedAt time.Ti
 	return err
 }
 
+func (s *ResearchStorage) WriteInferenceStartTime(id string, startedAt time.Time) error {
+	q := "UPDATE researches SET processing_started_at = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, startedAt)
+	return err
+}
+
 func (s *ResearchStorage) WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error {
 	q := "UPDATE researches SET study_id = $2, series_id = $3, files_count = $4, archive_size = $5 WHERE id = $1"
 	_, err := s.db.Exec(q, id, metadata.StudyId, metadata.SeriesId, metadata.FilesCount, size)
