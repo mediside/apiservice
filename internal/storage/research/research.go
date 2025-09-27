@@ -50,9 +50,21 @@ func (s *ResearchStorage) Create(id, collectionId, filepath string) error {
 	return err
 }
 
-func (s *ResearchStorage) WriteInferenceResult(id string, probabilityOfPathology float32, finishedAt time.Time) error {
-	q := "UPDATE researches SET probability_of_pathology = $2, processing_finished_at = $3 WHERE id = $1"
-	_, err := s.db.Exec(q, id, probabilityOfPathology, finishedAt)
+func (s *ResearchStorage) WriteInferenceResult(id string, probabilityOfPathology float32) error {
+	q := "UPDATE researches SET probability_of_pathology = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, probabilityOfPathology)
+	return err
+}
+
+func (s *ResearchStorage) WriteInferenceError(id, inferenceErr string) error {
+	q := "UPDATE researches SET inference_error = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, inferenceErr)
+	return err
+}
+
+func (s *ResearchStorage) WriteInferenceFinishTime(id string, finishedAt time.Time) error {
+	q := "UPDATE researches SET processing_finished_at = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, finishedAt)
 	return err
 }
 

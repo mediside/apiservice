@@ -22,7 +22,9 @@ type InferenceProvider interface {
 type ResearchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
 	Create(id, collectionId, filepath string) error
-	WriteInferenceResult(id string, probabilityOfPathology float32, finishedAt time.Time) error
+	WriteInferenceResult(id string, probabilityOfPathology float32) error
+	WriteInferenceError(id, inferenceErr string) error
+	WriteInferenceFinishTime(id string, finishedAt time.Time) error
 	WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error
 }
 
@@ -171,7 +173,12 @@ func (s *ResearchService) inferenceWorker() {
 		go func() {
 			defer close(responseCh)
 			if err := s.inferenceProvider.DoInference(responseCh, t.Filepath); err != nil {
-				s.log.Error("inference error", slog.String("err", err.Error()))
+				s.log.Warn("inference error", slog.String("err", err.Error()))
+				if e := s.researchProvider.WriteInferenceError(t.ResearchId, err.Error()); e != nil {
+					s.log.Error("fail write inference error in db", slog.String("err", err.Error()))
+				} else {
+					s.log.Debug("inference error writed to DB")
+				}
 			}
 		}()
 
@@ -186,13 +193,21 @@ func (s *ResearchService) inferenceWorker() {
 			inferenceResponse = r
 		}
 
-		s.log.Info("finish inference")
 		finishedAt := time.Now().UTC()
-
-		if err := s.researchProvider.WriteInferenceResult(t.ResearchId, inferenceResponse.ProbabilityOfPathology, finishedAt); err != nil {
-			s.log.Error("fail write inference result in db", slog.String("err", err.Error()))
+		if err := s.researchProvider.WriteInferenceFinishTime(t.ResearchId, finishedAt); err != nil {
+			s.log.Error("fail write inference finish time in db", slog.String("err", err.Error()))
 		} else {
-			s.log.Debug("inference result writed to DB")
+			s.log.Debug("inference finish time writed to DB")
+		}
+		s.log.Info("finish inference")
+
+		if inferenceResponse.Done {
+			s.log.Info("inference success", slog.String("ResearchId", t.ResearchId))
+			if err := s.researchProvider.WriteInferenceResult(t.ResearchId, inferenceResponse.ProbabilityOfPathology); err != nil {
+				s.log.Error("fail write inference result in db", slog.String("err", err.Error()))
+			} else {
+				s.log.Debug("inference result writed to DB")
+			}
 		}
 	}
 
