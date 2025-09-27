@@ -73,3 +73,9 @@ func (s *ResearchStorage) WriteMetadata(id string, metadata research.ResearchMet
 	_, err := s.db.Exec(q, id, metadata.StudyId, metadata.SeriesId, metadata.FilesCount, size)
 	return err
 }
+
+func (s *ResearchStorage) MarkCorrupted(id string) error {
+	q := "UPDATE researches SET archive_corrupt = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, "true") // пока что текстом, вдруг кроме true еще варианты повреждений добавятся
+	return err
+}

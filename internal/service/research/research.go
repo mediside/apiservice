@@ -26,6 +26,7 @@ type ResearchProvider interface {
 	WriteInferenceError(id, inferenceErr string) error
 	WriteInferenceFinishTime(id string, finishedAt time.Time) error
 	WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error
+	MarkCorrupted(id string) error
 }
 
 type ResearchService struct {
@@ -78,6 +79,7 @@ func (s *ResearchService) processing(filename, collectionId string) {
 	reader, err := zip.OpenReader(filepath)
 	if err != nil {
 		s.log.Error("can't open ZIP", slog.String("err", err.Error()))
+		s.researchProvider.MarkCorrupted(id)
 		return // если не смогли сами прочитать архив, то не даем задачу на инференс
 	}
 	defer reader.Close()
