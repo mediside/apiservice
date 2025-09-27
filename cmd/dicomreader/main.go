@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	filepath := "/home/m/dev/hackathon/apiservice/researches/45e15946-9389-4919-8c4c-a8cc7fd46a08/norma_anon.zip"
+	filepath := "/home/m/dev/hackathon/apiservice/researches/45e15946-9389-4919-8c4c-a8cc7fd46a08/pneumonia_anon.zip"
 	r, err := zip.OpenReader(filepath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("can't open ZIP: %s", err)
 	}
 	defer r.Close()
 
@@ -36,11 +36,12 @@ func main() {
 
 			fmt.Println("Parsed DICOM file:", f.Name)
 
-			patientNameElem, err := d.FindElementByTag(tag.Manufacturer)
+			patientNameElem, err := d.FindElementByTag(tag.SeriesInstanceUID)
 			if err != nil {
 				fmt.Println("tag not found:", err)
 			} else {
-				fmt.Println("tag:", patientNameElem.Value)
+				fmt.Println("tag:", patientNameElem.Value.String())
+				fmt.Println("str:", patientNameElem.ValueRepresentation)
 			}
 		}
 

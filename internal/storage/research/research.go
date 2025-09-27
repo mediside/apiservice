@@ -55,3 +55,9 @@ func (s *ResearchStorage) WriteInferenceResult(id string, probabilityOfPathology
 	_, err := s.db.Exec(q, id, probabilityOfPathology, finishedAt)
 	return err
 }
+
+func (s *ResearchStorage) WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error {
+	q := "UPDATE researches SET study_id = $2, series_id = $3, files_count = $4, archive_size = $5 WHERE id = $1"
+	_, err := s.db.Exec(q, id, metadata.StudyId, metadata.SeriesId, metadata.FilesCount, size)
+	return err
+}
