@@ -43,8 +43,8 @@ func New(log *slog.Logger, cfg *config.Config, collectionProvider CollectionProv
 }
 
 func (s *CollectionService) Create() (collection.Collection, error) {
-	id := uuid.New()
-	res, err := s.collectionProvider.Create(id.String(), s.cfg.PathologyLevel)
+	id := uuid.New().String()[:13] // чтобы имена папок с коллекциями были достаточно короткими
+	res, err := s.collectionProvider.Create(id, s.cfg.PathologyLevel)
 	if err != nil {
 		s.log.Error("create collection", slog.String("err", err.Error()))
 		return collection.Collection{}, err
