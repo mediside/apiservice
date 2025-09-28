@@ -15,14 +15,12 @@ type InferenceProvider interface {
 
 type ResearchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
-	Create(id, collectionId, filepath string) error
+	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.ResearchMetadata) error
 	Delete(id string) error
 	WriteInferenceResult(id string, probabilityOfPathology float32) error
 	WriteInferenceError(id, inferenceErr string) error
 	WriteInferenceFinishTime(id string, finishedAt time.Time) error
 	WriteInferenceStartTime(id string, startedAt time.Time) error
-	WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error
-	MarkCorrupted(id string) error
 }
 
 type ResearchService struct {

@@ -9,57 +9,68 @@ import (
 	"github.com/suyashkumar/dicom/pkg/tag"
 )
 
-func (s *ResearchService) readMetadata(id string, reader *zip.ReadCloser) (research.ResearchMetadata, error) {
-	// нужны: study_uid и series_uid (из DICOM-тегов)
-	var (
-		studyIdElem  *dicom.Element
-		seriesIdElem *dicom.Element
-	)
+func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.ResearchMetadata, error) {
+	uniqMetadatas := make(map[string]research.ResearchMetadata)
 
-	// последовательно идем по всем файлам. Когда прочитали оба поля - не важно, из каких файлов
-	// то дальше файлы не читаем
 	for _, f := range reader.File {
 		info := f.FileInfo()
-		if !info.IsDir() {
-			bytesToRead := info.Size()
-			rc, err := f.Open()
-			if err != nil {
-				s.log.Error("can't open file in ZIP", slog.String("err", err.Error()))
-				return research.ResearchMetadata{}, err
+		if info.IsDir() {
+			continue // избегаем вложенности для кода ниже
+		}
+
+		bytesToRead := info.Size()
+		rc, err := f.Open()
+		if err != nil {
+			s.log.Warn("can't open file in ZIP", slog.String("err", err.Error()), slog.String("filename", f.Name))
+			continue
+		}
+
+		d, err := dicom.Parse(rc, bytesToRead, nil)
+		rc.Close()
+		if err != nil {
+			s.log.Warn("can't parse DICOM", slog.String("err", err.Error()), slog.String("filename", f.Name))
+			continue
+		}
+
+		studyIdElem, err := d.FindElementByTag(tag.StudyInstanceUID)
+		if err != nil {
+			s.log.Warn("not found studyIdElem in DICOM", slog.String("err", err.Error()), slog.String("filename", info.Name()))
+		}
+
+		seriesIdElem, err := d.FindElementByTag(tag.SeriesInstanceUID)
+		if err != nil {
+			s.log.Warn("not found seriesIdElem in DICOM", slog.String("err", err.Error()), slog.String("filename", info.Name()))
+		}
+
+		if studyIdElem != nil && seriesIdElem != nil {
+			studyId := studyIdElem.Value.String()
+			seriesId := seriesIdElem.Value.String()
+			key := studyId + "_" + seriesId
+
+			filesCount := 1 // текущий прочитанный файл входит в общее количество файлов
+			metadata, ok := uniqMetadatas[key]
+			if ok {
+				filesCount = metadata.FilesCount
 			}
 
-			d, err := dicom.Parse(rc, bytesToRead, nil)
-			rc.Close()
-			if err != nil {
-				s.log.Error("can't parse DICOM", slog.String("err", err.Error()))
-				return research.ResearchMetadata{}, err
-			}
-
-			if studyIdElem == nil {
-				studyIdElem, err = d.FindElementByTag(tag.StudyInstanceUID)
-				if err != nil {
-					s.log.Warn("not found studyIdElem", slog.String("err", err.Error()), slog.String("filename", info.Name()))
-				}
-			}
-
-			if seriesIdElem == nil {
-				seriesIdElem, err = d.FindElementByTag(tag.SeriesInstanceUID)
-				if err != nil {
-					s.log.Warn("not found seriesIdElem", slog.String("err", err.Error()), slog.String("filename", info.Name()))
-				}
-			}
-
-			if studyIdElem != nil && seriesIdElem != nil {
-				break
+			uniqMetadatas[key] = research.ResearchMetadata{
+				StudyId:    studyId,
+				SeriesId:   seriesId,
+				FilesCount: filesCount,
 			}
 		}
 	}
 
-	if studyIdElem == nil || seriesIdElem == nil {
-		s.log.Error("not found study_uid or series_uid", slog.String("id", id))
-		return research.ResearchMetadata{}, research.ErrNotFoundMetadata
+	s.log.Info("metadatas count", slog.Int("count", len(uniqMetadatas)))
+
+	if len(uniqMetadatas) == 0 {
+		return nil, research.ErrNotFoundMetadata
 	}
-	studyId := studyIdElem.Value.String()
-	seriesId := seriesIdElem.Value.String()
-	return research.ResearchMetadata{StudyId: studyId, SeriesId: seriesId, FilesCount: len(reader.File)}, nil
+
+	metadatas := make([]research.ResearchMetadata, 0, 1) // чаще всего в архиве будет 1 серия
+	for _, v := range uniqMetadatas {
+		metadatas = append(metadatas, v)
+	}
+
+	return metadatas, nil
 }

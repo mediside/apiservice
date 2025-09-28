@@ -44,9 +44,16 @@ func (s *ResearchStorage) SaveFile(subfolder, filename string, src io.Reader) er
 	return nil
 }
 
-func (s *ResearchStorage) Create(id, collectionId, filepath string) error {
-	q := "INSERT INTO researches (id,collection_id,file_path) VALUES ($1,$2,$3)"
-	_, err := s.db.Exec(q, id, collectionId, filepath)
+func (s *ResearchStorage) Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.ResearchMetadata) error {
+	var err error = nil
+	if archiveCorrupt {
+		q := "INSERT INTO researches (id,collection_id,file_path,archive_size,archive_corrupt) VALUES ($1,$2,$3,$4,$5)"
+		_, err = s.db.Exec(q, id, collectionId, filepath, size, true)
+	} else {
+		q := "INSERT INTO researches (id,collection_id,file_path,archive_size,study_id,series_id,files_count) VALUES ($1,$2,$3,$4,$5,$6,$7)"
+		_, err = s.db.Exec(q, id, collectionId, filepath, size, metadata.StudyId, metadata.SeriesId, metadata.FilesCount)
+	}
+
 	return err
 }
 
@@ -71,18 +78,6 @@ func (s *ResearchStorage) WriteInferenceFinishTime(id string, finishedAt time.Ti
 func (s *ResearchStorage) WriteInferenceStartTime(id string, startedAt time.Time) error {
 	q := "UPDATE researches SET processing_started_at = $2 WHERE id = $1"
 	_, err := s.db.Exec(q, id, startedAt)
-	return err
-}
-
-func (s *ResearchStorage) WriteMetadata(id string, metadata research.ResearchMetadata, size int64) error {
-	q := "UPDATE researches SET study_id = $2, series_id = $3, files_count = $4, archive_size = $5 WHERE id = $1"
-	_, err := s.db.Exec(q, id, metadata.StudyId, metadata.SeriesId, metadata.FilesCount, size)
-	return err
-}
-
-func (s *ResearchStorage) MarkCorrupted(id string) error {
-	q := "UPDATE researches SET archive_corrupt = $2 WHERE id = $1"
-	_, err := s.db.Exec(q, id, true)
 	return err
 }
 

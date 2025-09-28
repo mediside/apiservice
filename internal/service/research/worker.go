@@ -31,8 +31,8 @@ func (s *ResearchService) inferenceWorker() {
 				s.inferenceCh <- inference.InferenceProgress{
 					Done:       true, // инференс закончен, но с ошибкой
 					ResearchId: t.ResearchId,
-					SeriesId:   "", // TODO
-					StudyId:    "", // TODO
+					SeriesId:   t.SeriesId,
+					StudyId:    t.StudyId,
 					Err:        err.Error(),
 				}
 			}
@@ -54,8 +54,8 @@ func (s *ResearchService) inferenceWorker() {
 				ProbabilityOfPathology: r.ProbabilityOfPathology,
 				Done:                   r.Done,
 				ResearchId:             t.ResearchId,
-				SeriesId:               "", // TODO
-				StudyId:                "", // TODO
+				SeriesId:               t.SeriesId,
+				StudyId:                t.StudyId,
 			}
 		}
 
