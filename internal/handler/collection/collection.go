@@ -2,6 +2,7 @@ package collection
 
 import (
 	"apiservice/internal/domain/collection"
+	"bytes"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ type CollectionProvider interface {
 	Delete(id string) error
 	List() ([]collection.Collection, error)
 	GetOne(id string) (collection.CollectionWithResearches, error)
+	CreateReport(id string) (*bytes.Buffer, error)
 }
 
 type CollectionHandler struct {
@@ -77,6 +79,26 @@ func (h *CollectionHandler) Delete(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
 		return
 	}
+
+	ctx.Status(http.StatusOK)
+}
+
+func (h *CollectionHandler) Report(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if id == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "err"})
+		return
+	}
+
+	buf, err := h.collectionProvider.CreateReport(id)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
+
+	ctx.Header("Content-Disposition", "attachment; filename=users.xlsx")
+	ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf.Bytes())
 
 	ctx.Status(http.StatusOK)
 }
