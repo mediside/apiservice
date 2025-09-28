@@ -20,6 +20,7 @@ type CollectionProvider interface {
 
 type ResearchProvider interface {
 	List(collectionId string) ([]research.Research, error)
+	DeleteFiles(collectionId string) error
 }
 
 type CollectionService struct {
@@ -50,8 +51,13 @@ func (s *CollectionService) Create() (collection.Collection, error) {
 }
 
 func (s *CollectionService) Delete(id string) error {
+	if err := s.researchProvider.DeleteFiles(id); err != nil {
+		s.log.Error("delete collection files", slog.String("id", id), slog.String("err", err.Error()))
+		return err
+	}
+
 	if err := s.collectionProvider.Delete(id); err != nil {
-		s.log.Error("delete collection", slog.String("err", err.Error()))
+		s.log.Error("delete collection", slog.String("id", id), slog.String("err", err.Error()))
 		return err
 	}
 

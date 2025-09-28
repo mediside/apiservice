@@ -167,3 +167,8 @@ func (s *ResearchStorage) Delete(id string) error {
 	_, err = s.db.Exec(q, id)
 	return err
 }
+
+func (s *ResearchStorage) DeleteFiles(subfolder string) error {
+	folderpath := s.researchSavePath + "/" + subfolder
+	return os.RemoveAll(folderpath)
+}
