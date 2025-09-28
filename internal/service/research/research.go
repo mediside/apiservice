@@ -37,6 +37,7 @@ type ResearchService struct {
 	researchProvider  ResearchProvider
 	inferenceProvider InferenceProvider
 	taskCh            chan inference.InferenceTask
+	inferenceCh       chan inference.InferenceProgress // для отправки во внешний мир
 }
 
 func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider, inferenceProvider InferenceProvider) *ResearchService {
@@ -46,6 +47,7 @@ func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider
 		researchProvider:  researchProvider,
 		inferenceProvider: inferenceProvider,
 		taskCh:            make(chan inference.InferenceTask),
+		inferenceCh:       make(chan inference.InferenceProgress),
 	}
 
 	go research.inferenceWorker()
@@ -188,6 +190,14 @@ func (s *ResearchService) inferenceWorker() {
 				} else {
 					s.log.Debug("inference error writed to DB")
 				}
+
+				s.inferenceCh <- inference.InferenceProgress{
+					Done:       true, // инференс закончен, но с ошибкой
+					ResearchId: t.ResearchId,
+					SeriesId:   "", // TODO
+					StudyId:    "", // TODO
+					Err:        err.Error(),
+				}
 			}
 		}()
 
@@ -200,6 +210,16 @@ func (s *ResearchService) inferenceWorker() {
 				slog.Uint64("percent", uint64(r.Percent)),
 				slog.Float64("ProbabilityOfPathology", float64(r.ProbabilityOfPathology)))
 			inferenceResponse = r
+
+			s.inferenceCh <- inference.InferenceProgress{
+				Percent:                r.Percent,
+				Step:                   r.Step,
+				ProbabilityOfPathology: r.ProbabilityOfPathology,
+				Done:                   r.Done,
+				ResearchId:             t.ResearchId,
+				SeriesId:               "", // TODO
+				StudyId:                "", // TODO
+			}
 		}
 
 		finishedAt := time.Now().UTC()
@@ -230,4 +250,8 @@ func (s *ResearchService) Delete(id string) error {
 	}
 
 	return nil
+}
+
+func (s *ResearchService) InferenceCh() <-chan inference.InferenceProgress {
+	return s.inferenceCh
 }

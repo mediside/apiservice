@@ -15,3 +15,14 @@ type InferenceResponse struct {
 	ProbabilityOfPathology float32
 	Done                   bool
 }
+
+type InferenceProgress struct {
+	Percent                uint    `json:"percent"`
+	Step                   string  `json:"step"`
+	ProbabilityOfPathology float32 `json:"probability_of_pathology"`
+	Done                   bool    `json:"done"`
+	ResearchId             string  `json:"research_id"`
+	StudyId                string  `json:"study_id"`
+	SeriesId               string  `json:"series_id"`
+	Err                    string  `json:"err"`
+}

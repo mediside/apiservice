@@ -4,6 +4,7 @@ import (
 	"apiservice/internal/config"
 	"apiservice/internal/domain/model"
 	"apiservice/internal/handler/collection"
+	"apiservice/internal/handler/inference"
 	"apiservice/internal/handler/research"
 	"apiservice/internal/service"
 	"log/slog"
@@ -21,6 +22,7 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 
 	collectionHandler := collection.New(serv.CollectionService)
 	researchHandler := research.New(serv.ResearchService, serv.CollectionService)
+	inferenceHandler := inference.New(serv.ResearchService)
 
 	router := gin.Default()
 
@@ -37,6 +39,9 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 	researchApi := api.Group(("researches"))
 	researchApi.POST("/upload", researchHandler.Upload)
 	researchApi.DELETE("/:id", researchHandler.Delete)
+
+	inferenceApi := api.Group("/inference")
+	inferenceApi.GET("/progress/ws/", inferenceHandler.Connect)
 
 	return router
 }
