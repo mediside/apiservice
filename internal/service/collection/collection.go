@@ -99,6 +99,7 @@ func (s *CollectionService) GetOne(id string) (collection.CollectionWithResearch
 		researches[k] = research.ResearchResult{
 			Id:                     rs[k].Id,
 			Filepath:               rs[k].Filepath,
+			Size:                   rs[k].Size,
 			Assessment:             rs[k].Assessment,
 			ArchiveCorrupt:         rs[k].ArchiveCorrupt,
 			ProbabilityOfPathology: rs[k].ProbabilityOfPathology,

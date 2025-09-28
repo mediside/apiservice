@@ -95,7 +95,6 @@ func (s *ResearchStorage) List(collectionId string) ([]research.Research, error)
 
 	for rows.Next() {
 		var (
-			archiveSize sql.NullInt64
 			assessment  sql.NullString
 			probability sql.NullFloat64
 			startedAt   sql.NullTime
@@ -106,16 +105,15 @@ func (s *ResearchStorage) List(collectionId string) ([]research.Research, error)
 			infErr      sql.NullString
 		)
 		r := research.Research{}
-		err := rows.Scan(&r.Id, &r.Filepath, &archiveSize, &assessment, &r.ArchiveCorrupt, &probability,
+		err := rows.Scan(&r.Id, &r.Filepath, &r.Size, &assessment, &r.ArchiveCorrupt, &probability,
 			&r.CreatedAt, &startedAt, &finishedAt, &studyId, &seriesId, &filesCount, &infErr)
 		if err != nil {
 			return nil, err
 		}
 
-		if archiveSize.Valid && studyId.Valid && seriesId.Valid && filesCount.Valid {
+		if studyId.Valid && seriesId.Valid && filesCount.Valid {
 			// эти поля устанавливаются совместно
 			r.Metadata = research.Metadata{
-				Size:       archiveSize.Int64,
 				SeriesId:   seriesId.String,
 				StudyId:    studyId.String,
 				FilesCount: uint(filesCount.Int32),

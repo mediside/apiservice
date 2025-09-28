@@ -17,6 +17,7 @@ type ResearchMetadata struct {
 type Research struct {
 	Id                     string
 	Filepath               string
+	Size                   int64
 	Assessment             string
 	ArchiveCorrupt         bool
 	ProbabilityOfPathology float32
@@ -31,6 +32,7 @@ type ResearchResult struct {
 	Id                     string    `json:"id"`
 	Filepath               string    `json:"filepath"`
 	Filename               string    `json:"filename"`
+	Size                   int64     `json:"size"`
 	Assessment             string    `json:"assessment,omitempty"`
 	ArchiveCorrupt         bool      `json:"archive_corrupt"`
 	ProbabilityOfPathology float32   `json:"probability_of_pathology,omitempty"`
