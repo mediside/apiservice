@@ -10,6 +10,7 @@ import (
 
 type ResearchProvider interface {
 	RunFileProcessing(filename, collectionId string, src io.Reader) error
+	Delete(id string) error
 }
 
 type CollectionProvider interface {
@@ -28,27 +29,27 @@ func New(researchProvider ResearchProvider, collectionProvider CollectionProvide
 	}
 }
 
-func (r *ResearchHandler) Upload(c *gin.Context) {
-	collectionId := c.Query("collection_id")
+func (r *ResearchHandler) Upload(ctx *gin.Context) {
+	collectionId := ctx.Query("collection_id")
 	if collectionId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "collection_id query param required"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "collection_id query param required"})
 		return
 	}
 
 	exists, err := r.collectionProvider.CheckExists(collectionId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error find collection"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error find collection"})
 		return
 	}
 	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "collection not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "collection not found"})
 		return
 	}
 
-	form, err := c.MultipartForm()
+	form, err := ctx.MultipartForm()
 	if err != nil {
-		fmt.Println(c.GetHeader("Content-Type"))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "error in multipart form"})
+		fmt.Println(ctx.GetHeader("Content-Type"))
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "error in multipart form"})
 		fmt.Println(err)
 		return
 	}
@@ -58,18 +59,35 @@ func (r *ResearchHandler) Upload(c *gin.Context) {
 	for _, file := range files {
 		src, err := file.Open()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open file"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open file"})
 			return
 		}
 		defer src.Close()
 
 		if err := r.researchProvider.RunFileProcessing(file.Filename, collectionId, src); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot save file"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "cannot save file"})
 			return
 		}
 
 		fmt.Println("success upload file", file.Filename)
 	}
 
-	c.JSON(200, gin.H{"message": "success", "count": len(files)})
+	ctx.JSON(200, gin.H{"message": "success", "count": len(files)})
+}
+
+func (r *ResearchHandler) Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if id == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "err"})
+		return
+	}
+
+	if err := r.researchProvider.Delete(id); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+
 }

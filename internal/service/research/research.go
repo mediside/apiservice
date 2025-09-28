@@ -22,6 +22,7 @@ type InferenceProvider interface {
 type ResearchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
 	Create(id, collectionId, filepath string) error
+	Delete(id string) error
 	WriteInferenceResult(id string, probabilityOfPathology float32) error
 	WriteInferenceError(id, inferenceErr string) error
 	WriteInferenceFinishTime(id string, finishedAt time.Time) error
@@ -220,4 +221,13 @@ func (s *ResearchService) inferenceWorker() {
 	}
 
 	s.log.Warn("finish inference worker")
+}
+
+func (s *ResearchService) Delete(id string) error {
+	if err := s.researchProvider.Delete(id); err != nil {
+		s.log.Error("delete collection", slog.String("err", err.Error()))
+		return err
+	}
+
+	return nil
 }

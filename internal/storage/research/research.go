@@ -147,3 +147,23 @@ func (s *ResearchStorage) List(collectionId string) ([]research.Research, error)
 
 	return rs, nil
 }
+
+func (s *ResearchStorage) Delete(id string) error {
+	q := "SELECT file_path FROM researches WHERE id = $1"
+	var filepath string
+
+	err := s.db.QueryRow(q, id).Scan(&filepath)
+	if err == sql.ErrNoRows {
+		return nil // пока что считаем, что если не нашли запись, то это не ошибка
+	} else if err != nil {
+		return err
+	}
+
+	if err := os.Remove(filepath); err != nil {
+		return err
+	}
+
+	q = "DELETE FROM researches WHERE id = $1"
+	_, err = s.db.Exec(q, id)
+	return err
+}
