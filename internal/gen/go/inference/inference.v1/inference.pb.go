@@ -24,6 +24,8 @@ const (
 type InferenceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	FilePath      string                 `protobuf:"bytes,1,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
+	StudyId       string                 `protobuf:"bytes,2,opt,name=study_id,json=studyId,proto3" json:"study_id,omitempty"`
+	SeriesId      string                 `protobuf:"bytes,3,opt,name=series_id,json=seriesId,proto3" json:"series_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,6 +63,20 @@ func (*InferenceRequest) Descriptor() ([]byte, []int) {
 func (x *InferenceRequest) GetFilePath() string {
 	if x != nil {
 		return x.FilePath
+	}
+	return ""
+}
+
+func (x *InferenceRequest) GetStudyId() string {
+	if x != nil {
+		return x.StudyId
+	}
+	return ""
+}
+
+func (x *InferenceRequest) GetSeriesId() string {
+	if x != nil {
+		return x.SeriesId
 	}
 	return ""
 }
@@ -247,9 +263,11 @@ var File_inference_proto protoreflect.FileDescriptor
 
 const file_inference_proto_rawDesc = "" +
 	"\n" +
-	"\x0finference.proto\x12\tinference\"/\n" +
+	"\x0finference.proto\x12\tinference\"g\n" +
 	"\x10InferenceRequest\x12\x1b\n" +
-	"\tfile_path\x18\x01 \x01(\tR\bfilePath\"~\n" +
+	"\tfile_path\x18\x01 \x01(\tR\bfilePath\x12\x19\n" +
+	"\bstudy_id\x18\x02 \x01(\tR\astudyId\x12\x1b\n" +
+	"\tseries_id\x18\x03 \x01(\tR\bseriesId\"~\n" +
 	"\x11InferenceResponse\x121\n" +
 	"\bprogress\x18\x01 \x01(\v2\x13.inference.ProgressH\x00R\bprogress\x12+\n" +
 	"\x06result\x18\x02 \x01(\v2\x11.inference.ResultH\x00R\x06resultB\t\n" +
