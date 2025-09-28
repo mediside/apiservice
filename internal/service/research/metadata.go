@@ -50,7 +50,7 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Rese
 			filesCount := 1 // текущий прочитанный файл входит в общее количество файлов
 			metadata, ok := uniqMetadatas[key]
 			if ok {
-				filesCount = metadata.FilesCount
+				filesCount = metadata.FilesCount + 1
 			}
 
 			uniqMetadatas[key] = research.ResearchMetadata{
