@@ -158,8 +158,10 @@ func (s *ResearchStorage) Delete(id string) error {
 		return err
 	}
 
-	q = "DELETE FROM researches WHERE id = $1"
-	_, err = s.db.Exec(q, id)
+	// TODO: удалить папку, если она осталась пустой
+
+	q = "DELETE FROM researches WHERE file_path = $1"
+	_, err = s.db.Exec(q, filepath)
 	return err
 }
 
