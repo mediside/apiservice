@@ -10,7 +10,7 @@ import (
 )
 
 type InferenceProvider interface {
-	DoInference(responseCh chan<- inference.InferenceResponse, filepath string) error
+	DoInference(responseCh chan<- inference.InferenceResponse, filepath, studyId, seriesId string) error
 }
 
 type ResearchProvider interface {

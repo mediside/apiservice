@@ -20,7 +20,7 @@ func (s *ResearchService) inferenceWorker() {
 
 		go func() {
 			defer close(responseCh)
-			if err := s.inferenceProvider.DoInference(responseCh, t.Filepath); err != nil {
+			if err := s.inferenceProvider.DoInference(responseCh, t.Filepath, t.StudyId, t.SeriesId); err != nil {
 				s.log.Warn("inference error", slog.String("err", err.Error()))
 				if e := s.researchProvider.WriteInferenceError(t.ResearchId, err.Error()); e != nil {
 					s.log.Error("fail write inference error in db", slog.String("err", err.Error()))

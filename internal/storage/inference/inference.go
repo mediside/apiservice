@@ -17,11 +17,11 @@ func New(client infGRPC.InferenceClient) *InferenceStorage {
 	}
 }
 
-func (s *InferenceStorage) DoInference(responseCh chan<- inference.InferenceResponse, filepath string) error {
+func (s *InferenceStorage) DoInference(responseCh chan<- inference.InferenceResponse, filepath, studyId, seriesId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	stream, err := s.client.DoInference(ctx, &infGRPC.InferenceRequest{FilePath: filepath})
+	stream, err := s.client.DoInference(ctx, &infGRPC.InferenceRequest{FilePath: filepath, StudyId: studyId, SeriesId: seriesId})
 	if err != nil {
 		return err
 	}
