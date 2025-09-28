@@ -82,6 +82,68 @@ func (s *ResearchStorage) WriteMetadata(id string, metadata research.ResearchMet
 
 func (s *ResearchStorage) MarkCorrupted(id string) error {
 	q := "UPDATE researches SET archive_corrupt = $2 WHERE id = $1"
-	_, err := s.db.Exec(q, id, "true") // пока что текстом, вдруг кроме true еще варианты повреждений добавятся
+	_, err := s.db.Exec(q, id, true)
 	return err
+}
+
+func (s *ResearchStorage) List(collectionId string) ([]research.Research, error) {
+	q := `SELECT r.id, r.file_path, r.archive_size, r.assessment, r.archive_corrupt, r.probability_of_pathology,
+				r.created_at, r.processing_started_at, r.processing_finished_at, r.study_id, r.series_id, r.files_count, r.inference_error
+				FROM researches as r WHERE collection_id = $1 ORDER BY created_at ASC`
+	rows, err := s.db.Query(q, collectionId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rs []research.Research
+
+	for rows.Next() {
+		var (
+			archiveSize sql.NullInt64
+			assessment  sql.NullString
+			probability sql.NullFloat64
+			startedAt   sql.NullTime
+			finishedAt  sql.NullTime
+			studyId     sql.NullString
+			seriesId    sql.NullString
+			filesCount  sql.NullInt32
+			infErr      sql.NullString
+		)
+		r := research.Research{}
+		err := rows.Scan(&r.Id, &r.Filepath, &archiveSize, &assessment, &r.ArchiveCorrupt, &probability,
+			&r.CreatedAt, &startedAt, &finishedAt, &studyId, &seriesId, &filesCount, &infErr)
+		if err != nil {
+			return nil, err
+		}
+
+		if archiveSize.Valid && studyId.Valid && seriesId.Valid && filesCount.Valid {
+			// эти поля устанавливаются совместно
+			r.Metadata = research.Metadata{
+				Size:       archiveSize.Int64,
+				SeriesId:   seriesId.String,
+				StudyId:    studyId.String,
+				FilesCount: uint(filesCount.Int32),
+			}
+		}
+		if assessment.Valid {
+			r.Assessment = assessment.String
+		}
+		if probability.Valid {
+			r.ProbabilityOfPathology = float32(probability.Float64)
+		}
+		if startedAt.Valid {
+			r.ProcessingStartedAt = startedAt.Time
+		}
+		if finishedAt.Valid {
+			r.ProcessingFinishedAt = finishedAt.Time
+		}
+		if infErr.Valid {
+			r.InferenceError = infErr.String
+		}
+
+		rs = append(rs, r)
+	}
+
+	return rs, nil
 }

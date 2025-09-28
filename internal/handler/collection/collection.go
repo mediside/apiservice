@@ -11,7 +11,7 @@ type CollectionProvider interface {
 	Create() (collection.Collection, error)
 	Delete(id string) error
 	List() ([]collection.Collection, error)
-	GetOne(id string) (collection.Collection, error)
+	GetOne(id string) (collection.CollectionWithResearches, error)
 }
 
 type CollectionHandler struct {
