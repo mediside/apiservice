@@ -88,6 +88,5 @@ func (r *ResearchHandler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusOK)
-
+	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 }
