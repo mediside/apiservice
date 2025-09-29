@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const eps = 0.0001
+
 type InferenceStorage struct {
 	client infGRPC.InferenceClient
 }
@@ -39,8 +41,14 @@ func (s *InferenceStorage) DoInference(responseCh chan<- inference.InferenceResp
 				Step:    payload.Progress.Step,
 			}
 		case *infGRPC.InferenceResponse_Result:
+			prob := payload.Result.ProbabilityOfPathology
+			// Это поле в структуре ResearchResult помечено как omitempty. Нельзя допустить, чтобы значение было нулевым.
+			// В таком случае оно не будет отправлено в интерфейс вообще. Чтобы этого избежать, нужно присвоить небольшое значение
+			if prob < eps {
+				prob = eps
+			}
 			responseCh <- inference.InferenceResponse{
-				ProbabilityOfPathology: payload.Result.ProbabilityOfPathology,
+				ProbabilityOfPathology: prob,
 				Done:                   true,
 			}
 			return nil // прерываем цикл
