@@ -15,7 +15,7 @@ type InferenceProvider interface {
 
 type ResearchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
-	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.ResearchMetadata) error
+	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error
 	Delete(id string) error
 	WriteInferenceResult(id string, probabilityOfPathology float32) error
 	WriteInferenceError(id, inferenceErr string) error
@@ -30,6 +30,7 @@ type ResearchService struct {
 	inferenceProvider InferenceProvider
 	taskCh            chan inference.InferenceTask
 	inferenceCh       chan inference.InferenceProgress // для отправки во внешний мир
+	updateCh          chan research.ResearchUpdate     // для общих обновлений в БД (кроме удаления)
 }
 
 func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider, inferenceProvider InferenceProvider) *ResearchService {
@@ -40,6 +41,7 @@ func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider
 		inferenceProvider: inferenceProvider,
 		taskCh:            make(chan inference.InferenceTask),
 		inferenceCh:       make(chan inference.InferenceProgress),
+		updateCh:          make(chan research.ResearchUpdate),
 	}
 
 	go research.inferenceWorker()
@@ -74,4 +76,8 @@ func (s *ResearchService) Delete(id string) error {
 
 func (s *ResearchService) InferenceCh() <-chan inference.InferenceProgress {
 	return s.inferenceCh
+}
+
+func (s *ResearchService) UpdateCh() <-chan research.ResearchUpdate {
+	return s.updateCh
 }

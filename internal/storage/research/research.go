@@ -44,7 +44,7 @@ func (s *ResearchStorage) SaveFile(subfolder, filename string, src io.Reader) er
 	return nil
 }
 
-func (s *ResearchStorage) Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.ResearchMetadata) error {
+func (s *ResearchStorage) Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error {
 	var err error = nil
 	if archiveCorrupt {
 		q := "INSERT INTO researches (id,collection_id,file_path,archive_size,archive_corrupt) VALUES ($1,$2,$3,$4,$5)"
@@ -116,7 +116,7 @@ func (s *ResearchStorage) List(collectionId string) ([]research.Research, error)
 			r.Metadata = research.Metadata{
 				SeriesId:   seriesId.String,
 				StudyId:    studyId.String,
-				FilesCount: uint(filesCount.Int32),
+				FilesCount: int(filesCount.Int32),
 			}
 		}
 		if assessment.Valid {

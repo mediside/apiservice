@@ -5,10 +5,11 @@ import "errors"
 var ErrGrpcUnknown = errors.New("unknown message in gRPC")
 
 type InferenceTask struct {
-	ResearchId string
-	Filepath   string
-	StudyId    string // в целом, достаточно только одного Id, но можно оставить оба
-	SeriesId   string // для поддержки нескольких разных исследований в одном архиве
+	ResearchId   string
+	CollectionId string
+	Filepath     string
+	StudyId      string // в целом, достаточно только одного Id, но можно оставить оба
+	SeriesId     string // для поддержки нескольких разных исследований в одном архиве
 }
 
 type InferenceResponse struct {

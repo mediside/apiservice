@@ -1,16 +1,19 @@
 package research
 
 import (
+	"apiservice/internal/domain/research"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 type ResearchProvider interface {
 	RunFileProcessing(filename, collectionId string, src io.Reader) error
 	Delete(id string) error
+	UpdateCh() <-chan research.ResearchUpdate
 }
 
 type CollectionProvider interface {
@@ -20,13 +23,29 @@ type CollectionProvider interface {
 type ResearchHandler struct {
 	researchProvider   ResearchProvider
 	collectionProvider CollectionProvider
+	updateCh           <-chan research.ResearchUpdate
+	upgrader           websocket.Upgrader
+	clients            map[*websocket.Conn]bool
 }
 
 func New(researchProvider ResearchProvider, collectionProvider CollectionProvider) *ResearchHandler {
-	return &ResearchHandler{
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin:     func(r *http.Request) bool { return true },
+	}
+
+	resHandler := &ResearchHandler{
 		researchProvider:   researchProvider,
 		collectionProvider: collectionProvider,
+		updateCh:           researchProvider.UpdateCh(),
+		upgrader:           upgrader,
+		clients:            make(map[*websocket.Conn]bool),
 	}
+
+	go resHandler.broadcastMessages()
+
+	return resHandler
 }
 
 func (r *ResearchHandler) Upload(ctx *gin.Context) {

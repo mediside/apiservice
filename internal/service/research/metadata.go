@@ -9,8 +9,8 @@ import (
 	"github.com/suyashkumar/dicom/pkg/tag"
 )
 
-func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.ResearchMetadata, error) {
-	uniqMetadatas := make(map[string]research.ResearchMetadata)
+func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Metadata, error) {
+	uniqMetadatas := make(map[string]research.Metadata)
 
 	for _, f := range reader.File {
 		info := f.FileInfo()
@@ -53,7 +53,7 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Rese
 				filesCount = metadata.FilesCount + 1
 			}
 
-			uniqMetadatas[key] = research.ResearchMetadata{
+			uniqMetadatas[key] = research.Metadata{
 				StudyId:    studyId,
 				SeriesId:   seriesId,
 				FilesCount: filesCount,
@@ -67,7 +67,7 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Rese
 		return nil, research.ErrNotFoundMetadata
 	}
 
-	metadatas := make([]research.ResearchMetadata, 0, 1) // чаще всего в архиве будет 1 серия
+	metadatas := make([]research.Metadata, 0, 1) // чаще всего в архиве будет 1 серия
 	for _, v := range uniqMetadatas {
 		metadatas = append(metadatas, v)
 	}
