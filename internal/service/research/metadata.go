@@ -4,6 +4,7 @@ import (
 	"apiservice/internal/domain/research"
 	"archive/zip"
 	"log/slog"
+	"strings"
 
 	"github.com/suyashkumar/dicom"
 	"github.com/suyashkumar/dicom/pkg/tag"
@@ -43,8 +44,8 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Meta
 		}
 
 		if studyIdElem != nil && seriesIdElem != nil {
-			studyId := studyIdElem.Value.String()
-			seriesId := seriesIdElem.Value.String()
+			studyId := strings.Trim(studyIdElem.Value.String(), "[]")
+			seriesId := strings.Trim(seriesIdElem.Value.String(), "[]")
 			key := studyId + "_" + seriesId
 
 			filesCount := 1 // текущий прочитанный файл входит в общее количество файлов
