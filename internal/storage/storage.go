@@ -110,8 +110,10 @@ func connectGRPC(cfg *config.Config) infGRPC.InferenceClient {
 }
 
 func checkResearchesFolder(path string) {
-	if ex, err := exists(path); err != nil || !ex {
-		log.Fatalf("folder %s not exists: %s", path, err.Error()) // volume в контейнере должен быть смонтирован
+	if ex, err := exists(path); err != nil {
+		log.Fatalf("can't check folder %s: %s", path, err.Error()) // volume в контейнере должен быть смонтирован
+	} else if !ex {
+		log.Fatalf("folder %s not exists", path) // volume в контейнере должен быть смонтирован
 	}
 }
 
