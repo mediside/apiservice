@@ -10,7 +10,7 @@ import (
 	"github.com/suyashkumar/dicom/pkg/tag"
 )
 
-func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Metadata, error) {
+func (s *ResearchService) readMetadatas(reader *zip.ReadCloser, setTask func(research.Metadata)) error {
 	uniqMetadatas := make(map[string]research.Metadata)
 
 	for _, f := range reader.File {
@@ -52,6 +52,10 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Meta
 			metadata, ok := uniqMetadatas[key]
 			if ok {
 				filesCount = metadata.FilesCount + 1
+			} else {
+				s.log.Info("find uniq metadata; create inference task", slog.String("key", key))
+
+				go setTask(metadata)
 			}
 
 			uniqMetadatas[key] = research.Metadata{
@@ -65,7 +69,7 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Meta
 	s.log.Info("metadatas count", slog.Int("count", len(uniqMetadatas)))
 
 	if len(uniqMetadatas) == 0 {
-		return nil, research.ErrNotFoundMetadata
+		return research.ErrNotFoundMetadata
 	}
 
 	metadatas := make([]research.Metadata, 0, 1) // чаще всего в архиве будет 1 серия
@@ -73,5 +77,5 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser) ([]research.Meta
 		metadatas = append(metadatas, v)
 	}
 
-	return metadatas, nil
+	return nil
 }

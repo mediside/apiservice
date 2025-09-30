@@ -43,37 +43,14 @@ func (s *ResearchService) processing(filename, collectionId string) {
 	}
 	defer reader.Close()
 
-	// TODO: оптимизация: можно не дожидаться, когда будут прочитаны все метаданные
-	// при помощи отправки информациив канал из s.readMetadatas
-	metadatas, err := s.readMetadatas(reader)
-	if err != nil {
-		return
-	}
-
-	for _, m := range metadatas {
-		id := uuid.New().String()
-		if err := s.researchProvider.Create(id, collectionId, filepath, size, false, m); err != nil {
-			s.log.Error("fail create research with metedata in db", slog.String("err", err.Error()), slog.String("id", id))
-			continue
-		}
-
-		s.updateCh <- research.ResearchUpdate{
-			Id:           id,
+	if err := s.readMetadatas(reader, func(metadata research.Metadata) {
+		s.taskCh <- inference.InferenceTask{
 			CollectionId: collectionId,
 			Filepath:     filepath,
-			Filename:     filepathLib.Base(filepath),
 			Size:         size,
-			Metadata:     m,
+			Metadata:     metadata,
 		}
-
-		go func() {
-			s.taskCh <- inference.InferenceTask{
-				ResearchId:   id,
-				CollectionId: collectionId,
-				Filepath:     filepath,
-				StudyId:      m.StudyId,
-				SeriesId:     m.SeriesId,
-			}
-		}()
+	}); err != nil {
+		return
 	}
 }

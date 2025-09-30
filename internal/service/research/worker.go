@@ -4,20 +4,38 @@ import (
 	"apiservice/internal/domain/inference"
 	"apiservice/internal/domain/research"
 	"log/slog"
+	filepathLib "path/filepath"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func (s *ResearchService) inferenceWorker() {
 	s.log.Info("start inference worker")
 
 	for t := range s.taskCh {
+		researchId := uuid.New().String()
+		if err := s.researchProvider.Create(researchId, t.CollectionId, t.Filepath, t.Size, false, t.Metadata); err != nil {
+			s.log.Warn("fail create research with metedata in db", slog.String("err", err.Error()), slog.String("id", researchId))
+			return
+		}
+
+		s.updateCh <- research.ResearchUpdate{
+			Id:           researchId,
+			CollectionId: t.CollectionId,
+			Filepath:     t.Filepath,
+			Filename:     filepathLib.Base(t.Filepath),
+			Size:         t.Size,
+			Metadata:     t.Metadata,
+		}
+
 		s.log.Info("start inference", slog.String("filepath", t.Filepath))
 		startedAt := time.Now().UTC()
-		if err := s.researchProvider.WriteInferenceStartTime(t.ResearchId, startedAt); err != nil {
+		if err := s.researchProvider.WriteInferenceStartTime(researchId, startedAt); err != nil {
 			s.log.Error("fail write inference start time in db", slog.String("err", err.Error()))
 		} else {
 			s.updateCh <- research.ResearchUpdate{
-				Id:                  t.ResearchId,
+				Id:                  researchId,
 				CollectionId:        t.CollectionId,
 				ProcessingStartedAt: startedAt,
 			}
@@ -27,13 +45,13 @@ func (s *ResearchService) inferenceWorker() {
 
 		go func() {
 			defer close(responseCh)
-			if err := s.inferenceProvider.DoInference(responseCh, t.Filepath, t.StudyId, t.SeriesId); err != nil {
+			if err := s.inferenceProvider.DoInference(responseCh, t.Filepath, t.Metadata.StudyId, t.Metadata.SeriesId); err != nil {
 				s.log.Warn("inference error", slog.String("err", err.Error()))
-				if e := s.researchProvider.WriteInferenceError(t.ResearchId, err.Error()); e != nil {
+				if e := s.researchProvider.WriteInferenceError(researchId, err.Error()); e != nil {
 					s.log.Error("fail write inference error in db", slog.String("err", err.Error()))
 				} else {
 					s.updateCh <- research.ResearchUpdate{
-						Id:             t.ResearchId,
+						Id:             researchId,
 						CollectionId:   t.CollectionId,
 						InferenceError: err.Error(),
 					}
@@ -41,11 +59,12 @@ func (s *ResearchService) inferenceWorker() {
 				}
 
 				s.inferenceCh <- inference.InferenceProgress{
-					Done:       true, // инференс закончен, но с ошибкой
-					ResearchId: t.ResearchId,
-					SeriesId:   t.SeriesId,
-					StudyId:    t.StudyId,
-					Err:        err.Error(),
+					Done:         true, // инференс закончен, но с ошибкой
+					ResearchId:   researchId,
+					CollectionId: t.CollectionId,
+					SeriesId:     t.Metadata.SeriesId,
+					StudyId:      t.Metadata.StudyId,
+					Err:          err.Error(),
 				}
 			}
 		}()
@@ -65,18 +84,19 @@ func (s *ResearchService) inferenceWorker() {
 				Step:                   r.Step,
 				ProbabilityOfPathology: r.ProbabilityOfPathology,
 				Done:                   r.Done,
-				ResearchId:             t.ResearchId,
-				SeriesId:               t.SeriesId,
-				StudyId:                t.StudyId,
+				ResearchId:             researchId,
+				CollectionId:           t.CollectionId,
+				SeriesId:               t.Metadata.SeriesId,
+				StudyId:                t.Metadata.StudyId,
 			}
 		}
 
 		finishedAt := time.Now().UTC()
-		if err := s.researchProvider.WriteInferenceFinishTime(t.ResearchId, finishedAt); err != nil {
+		if err := s.researchProvider.WriteInferenceFinishTime(researchId, finishedAt); err != nil {
 			s.log.Error("fail write inference finish time in db", slog.String("err", err.Error()))
 		} else {
 			s.updateCh <- research.ResearchUpdate{
-				Id:                   t.ResearchId,
+				Id:                   researchId,
 				CollectionId:         t.CollectionId,
 				ProcessingFinishedAt: finishedAt,
 				ProcessingDuration:   int64(finishedAt.Sub(startedAt).Seconds()),
@@ -86,12 +106,12 @@ func (s *ResearchService) inferenceWorker() {
 		s.log.Info("finish inference")
 
 		if inferenceResponse.Done {
-			s.log.Info("inference success", slog.String("ResearchId", t.ResearchId))
-			if err := s.researchProvider.WriteInferenceResult(t.ResearchId, inferenceResponse.ProbabilityOfPathology); err != nil {
+			s.log.Info("inference success", slog.String("ResearchId", researchId))
+			if err := s.researchProvider.WriteInferenceResult(researchId, inferenceResponse.ProbabilityOfPathology); err != nil {
 				s.log.Error("fail write inference result in db", slog.String("err", err.Error()))
 			} else {
 				s.updateCh <- research.ResearchUpdate{
-					Id:                     t.ResearchId,
+					Id:                     researchId,
 					CollectionId:           t.CollectionId,
 					ProbabilityOfPathology: inferenceResponse.ProbabilityOfPathology,
 				}
