@@ -28,7 +28,7 @@ func (s *CollectionService) CreateReport(id string) (*bytes.Buffer, error) {
 
 	headerStyle, err := f.NewStyle(&excelize.Style{
 		Font:      &excelize.Font{Bold: true},
-		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
 	})
 	if err != nil {
 		s.log.Error("unable create style for XLSX table header")
@@ -41,6 +41,10 @@ func (s *CollectionService) CreateReport(id string) (*bytes.Buffer, error) {
 	}
 
 	f.SetRowStyle(sheet, 1, 1, headerStyle)
+	f.SetColWidth(sheet, "A", "A", 42)
+	f.SetColWidth(sheet, "B", "C", 10)
+	f.SetColWidth(sheet, "D", "D", 13)
+	f.SetColWidth(sheet, "E", "H", 10)
 
 	// заголовок
 	f.SetCellValue(sheet, "A1", "path_to_study")
