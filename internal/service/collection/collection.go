@@ -109,7 +109,7 @@ func (s *CollectionService) GetOne(id string) (collection.CollectionWithResearch
 			InferenceError:         rs[k].InferenceError,
 			Metadata:               rs[k].Metadata,
 			Filename:               filename,
-			ProcessingDuration:     diff.Milliseconds(),
+			ProcessingDuration:     int64(diff.Seconds()),
 		}
 	}
 
@@ -206,7 +206,7 @@ func (s *CollectionService) CreateReport(id string) (*bytes.Buffer, error) {
 		f.SetCellValue(sheet, "F"+iStr, processingStatus)
 
 		diff := r.ProcessingFinishedAt.Sub(r.ProcessingStartedAt)
-		f.SetCellValue(sheet, "G"+iStr, diff.Seconds())
+		f.SetCellValue(sheet, "G"+iStr, int(diff.Seconds()))
 
 		f.SetCellValue(sheet, "H"+iStr, r.InferenceError)
 	}

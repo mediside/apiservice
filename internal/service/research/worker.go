@@ -79,7 +79,7 @@ func (s *ResearchService) inferenceWorker() {
 				Id:                   t.ResearchId,
 				CollectionId:         t.CollectionId,
 				ProcessingFinishedAt: finishedAt,
-				ProcessingDuration:   finishedAt.Sub(startedAt).Milliseconds(),
+				ProcessingDuration:   int64(finishedAt.Sub(startedAt).Seconds()),
 			}
 			s.log.Debug("inference finish time writed to DB")
 		}

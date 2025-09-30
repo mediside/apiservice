@@ -80,7 +80,7 @@ func (h *CollectionHandler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
 func (h *CollectionHandler) Report(ctx *gin.Context) {
@@ -99,6 +99,5 @@ func (h *CollectionHandler) Report(ctx *gin.Context) {
 
 	ctx.Header("Content-Disposition", "attachment; filename=users.xlsx")
 	ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf.Bytes())
-
 	ctx.Status(http.StatusOK)
 }
