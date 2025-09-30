@@ -52,11 +52,15 @@ func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider
 func (s *ResearchService) RunFileProcessing(filename, collectionId string, src io.Reader) error {
 	// загруженный файл сохраняем в любом случае, чтобы он отображался в статистике
 	// даже если он не валидный, чтобы было видно пользователю, что файл загрузился, но не читается
-	err := s.researchProvider.SaveFile(collectionId, filename, src)
-	if err != nil {
+	if err := s.researchProvider.SaveFile(collectionId, filename, src); err == research.ErrFileAlreadyExists {
+		s.log.Warn("file alrady exists; skip it", slog.String("filename", filename), slog.String("collectionId", collectionId))
+		return nil
+	} else if err != nil {
 		s.log.Error("fail save file", slog.String("filename", filename), slog.String("err", err.Error()))
 		return err
 	}
+
+	s.log.Info("success upload file", slog.String("filename", filename), slog.String("collectionId", collectionId))
 
 	// горутина нужна, чтобы не блокировать HTTP-вызов
 	// она сохранит контекст и встанет дожидаться очереди на отправку задачи

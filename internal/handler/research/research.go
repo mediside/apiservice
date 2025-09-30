@@ -87,8 +87,6 @@ func (r *ResearchHandler) Upload(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "cannot save file"})
 			return
 		}
-
-		fmt.Println("success upload file", file.Filename)
 	}
 
 	ctx.JSON(200, gin.H{"message": "success", "count": len(files)})
