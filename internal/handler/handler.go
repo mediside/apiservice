@@ -27,7 +27,6 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 	router := gin.Default()
 
 	api := router.Group("/api/v1")
-	api.GET("/ping", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"success": true}) })
 
 	collectionApi := api.Group("/collections")
 	collectionApi.POST("/new", collectionHandler.Add)
