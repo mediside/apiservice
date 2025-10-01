@@ -26,11 +26,12 @@ type httpConfig struct {
 }
 
 type postgresConfig struct {
-	Host     string `yaml:"host" env:"DATABASE_HOST"`
-	Port     string `yaml:"port" env:"DATABASE_PORT"`
-	Name     string `yaml:"name" env:"DATABASE_NAME"`
-	User     string `yaml:"user" env:"DATABASE_USER"`
-	Password string `yaml:"password" env:"DATABASE_PASSWORD"`
+	Host          string `yaml:"host" env:"DATABASE_HOST"`
+	Port          string `yaml:"port" env:"DATABASE_PORT"`
+	Name          string `yaml:"name" env:"DATABASE_NAME"`
+	User          string `yaml:"user" env:"DATABASE_USER"`
+	Password      string `yaml:"password" env:"DATABASE_PASSWORD"`
+	MigrationsDir string `yaml:"migrations_dir"`
 }
 
 type redisConfig struct {

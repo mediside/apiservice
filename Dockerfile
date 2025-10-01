@@ -6,9 +6,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -C cmd/apiservice -o /apiservice
 
 FROM alpine:3.22
 WORKDIR /app
-ENV CONFIG_PATH=./app/config/prod.yaml
+ENV CONFIG_PATH=./config/prod.yaml
 COPY --from=builder /apiservice /app/apiservice
-COPY config/ app/config/
+COPY config config
+COPY migrations migrations
 EXPOSE 9042
 
 ENTRYPOINT [ "/app/apiservice" ]

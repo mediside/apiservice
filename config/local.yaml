@@ -1,6 +1,6 @@
 env: "local"
 pathology_level: 0.8
-research_save_path: './researches'
+research_save_path: ./researches
 http:
   host: localhost
   port: 9042
@@ -10,6 +10,7 @@ postgres:
   name: med
   user: postgres
   password: postgres
+  migrations_dir: ./migrations
 redis:
   host: localhost
   port: 9379

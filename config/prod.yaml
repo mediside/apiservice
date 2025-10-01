@@ -1,6 +1,6 @@
-env: "prod"
+env: prod
 pathology_level: 0.8
-research_save_path: '/researches'
+research_save_path: /researches
 http:
   host: 0.0.0.0
   port: 9042
@@ -10,6 +10,7 @@ postgres:
   name: med
   user: postgres
   password: postgres
+  migrations_dir: /app/migrations
 redis:
   host: redis
   port: 6379

@@ -20,6 +20,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/pressly/goose/v3"
+
 	_ "github.com/lib/pq"
 )
 
@@ -33,7 +35,7 @@ type Storage struct {
 
 func New(logger *slog.Logger, cfg *config.Config) Storage {
 	db := connectPostgres(cfg)
-	logger.Info("db connected succesfully")
+	logger.Info("db connected succesfully and migrations applied")
 
 	cache := connectRedis(cfg)
 	logger.Info("cache connected succesfully")
@@ -78,6 +80,14 @@ func connectPostgres(cfg *config.Config) *sql.DB {
 
 	if err = db.Ping(); err != nil {
 		log.Fatalf("can't ping postgres: %s", err.Error())
+	}
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Fatalf("can't set dialect for migrations: %s", err.Error())
+	}
+
+	if err := goose.Up(db, cfg.Postgres.MigrationsDir); err != nil {
+		log.Fatalf("migrations failed: %v", err)
 	}
 
 	return db
