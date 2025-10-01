@@ -48,21 +48,21 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser, setTask func(res
 			seriesId := strings.Trim(seriesIdElem.Value.String(), "[]")
 			key := studyId + "_" + seriesId
 
-			filesCount := 1 // текущий прочитанный файл входит в общее количество файлов
+			// filesCount := 1 // текущий прочитанный файл входит в общее количество файлов
 			metadata, ok := uniqMetadatas[key]
 			if ok {
-				filesCount = metadata.FilesCount + 1
+				// filesCount = metadata.FilesCount + 1
 			} else {
 				s.log.Info("find uniq metadata; create inference task", slog.String("key", key))
-
+				metadata = research.Metadata{
+					StudyId:  studyId,
+					SeriesId: seriesId,
+					// FilesCount: filesCount, // TODO: поддержать обновление количества файлов
+				}
+				uniqMetadatas[key] = metadata
 				go setTask(metadata)
 			}
 
-			uniqMetadatas[key] = research.Metadata{
-				StudyId:    studyId,
-				SeriesId:   seriesId,
-				FilesCount: filesCount,
-			}
 		}
 	}
 
@@ -70,11 +70,6 @@ func (s *ResearchService) readMetadatas(reader *zip.ReadCloser, setTask func(res
 
 	if len(uniqMetadatas) == 0 {
 		return research.ErrNotFoundMetadata
-	}
-
-	metadatas := make([]research.Metadata, 0, 1) // чаще всего в архиве будет 1 серия
-	for _, v := range uniqMetadatas {
-		metadatas = append(metadatas, v)
 	}
 
 	return nil
