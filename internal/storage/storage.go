@@ -5,7 +5,6 @@ import (
 	"apiservice/internal/storage/collection"
 	"apiservice/internal/storage/inference"
 	"apiservice/internal/storage/research"
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -16,7 +15,6 @@ import (
 
 	infGRPC "apiservice/internal/gen/go/inference/inference.v1"
 
-	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -27,7 +25,6 @@ import (
 
 type Storage struct {
 	db                *sql.DB
-	cache             *redis.Client
 	CollectionStorage *collection.CollectionStorage
 	ResearchStorage   *research.ResearchStorage
 	InferenceStorage  *inference.InferenceStorage
@@ -36,9 +33,6 @@ type Storage struct {
 func New(logger *slog.Logger, cfg *config.Config) Storage {
 	db := connectPostgres(cfg)
 	logger.Info("db connected succesfully and migrations applied")
-
-	cache := connectRedis(cfg)
-	logger.Info("cache connected succesfully")
 
 	checkResearchesFolder(cfg.ResearchSavePath)
 	logger.Info("research save folder checked", slog.String("path", cfg.ResearchSavePath))
@@ -52,7 +46,6 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 
 	return Storage{
 		db:                db,
-		cache:             cache,
 		CollectionStorage: colStorage,
 		ResearchStorage:   resStorage,
 		InferenceStorage:  infStorage,
@@ -61,7 +54,6 @@ func New(logger *slog.Logger, cfg *config.Config) Storage {
 
 func (s Storage) Close() {
 	s.db.Close()
-	s.cache.Close()
 }
 
 func connectPostgres(cfg *config.Config) *sql.DB {
@@ -91,22 +83,6 @@ func connectPostgres(cfg *config.Config) *sql.DB {
 	}
 
 	return db
-}
-
-func connectRedis(cfg *config.Config) *redis.Client {
-	rdbOptions := &redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
-		Password: cfg.Redis.Password,
-		DB:       0,
-	}
-
-	rdb := redis.NewClient(rdbOptions)
-
-	if _, err := rdb.Ping(context.TODO()).Result(); err != nil {
-		log.Fatalf("can't ping redis: %s", err.Error())
-	}
-
-	return rdb
 }
 
 func connectGRPC(cfg *config.Config) infGRPC.InferenceClient {

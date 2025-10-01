@@ -16,7 +16,6 @@ type Config struct {
 	ResearchSavePath string         `yaml:"research_save_path"`
 	Http             httpConfig     `yaml:"http"`
 	Postgres         postgresConfig `yaml:"postgres"`
-	Redis            redisConfig    `yaml:"redis"`
 	GrpcConfig       grpcConfig     `yaml:"grpc"`
 }
 
@@ -32,12 +31,6 @@ type postgresConfig struct {
 	User          string `yaml:"user" env:"DATABASE_USER"`
 	Password      string `yaml:"password" env:"DATABASE_PASSWORD"`
 	MigrationsDir string `yaml:"migrations_dir"`
-}
-
-type redisConfig struct {
-	Host     string `yaml:"host" env:"REDIS_HOST"`
-	Port     string `yaml:"port" env:"REDIS_PORT"`
-	Password string `yaml:"password" env:"REDIS_PASSWORD"`
 }
 
 type grpcConfig struct {

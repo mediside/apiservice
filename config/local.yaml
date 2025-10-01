@@ -11,10 +11,6 @@ postgres:
   user: postgres
   password: postgres
   migrations_dir: ./migrations
-redis:
-  host: localhost
-  port: 9379
-  password: ""
 grpc:
   host: localhost
   port: 30042
