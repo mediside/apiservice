@@ -8,6 +8,7 @@ import (
 var ErrGrpcUnknown = errors.New("unknown message in gRPC")
 
 type InferenceTask struct {
+	ResearchId   string
 	CollectionId string
 	Filepath     string
 	Size         int64

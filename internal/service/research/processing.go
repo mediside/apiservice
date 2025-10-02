@@ -44,7 +44,23 @@ func (s *ResearchService) processing(filename, collectionId string) {
 	defer reader.Close()
 
 	if err := s.readMetadatas(reader, func(metadata research.Metadata) {
+		researchId := uuid.New().String()
+		if err := s.researchProvider.Create(researchId, collectionId, filepath, size, false, metadata); err != nil {
+			s.log.Warn("fail create research with metedata in db", slog.String("err", err.Error()), slog.String("id", researchId))
+			return
+		}
+
+		s.updateCh <- research.ResearchUpdate{
+			Id:           researchId,
+			CollectionId: collectionId,
+			Filepath:     filepath,
+			Filename:     filepathLib.Base(filepath),
+			Size:         size,
+			Metadata:     metadata,
+		}
+
 		s.taskCh <- inference.InferenceTask{
+			ResearchId:   researchId,
 			CollectionId: collectionId,
 			Filepath:     filepath,
 			Size:         size,
