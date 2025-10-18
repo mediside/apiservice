@@ -86,3 +86,15 @@ func (s *Storage) scanRow(scanFn func(dest ...any) error) (collection.Collection
 
 	return res, nil
 }
+
+func (s *Storage) WritePathologyLevel(id string, pathologyLevel float32) error {
+	q := "UPDATE collections SET pathology_level = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, pathologyLevel)
+	return err
+}
+
+func (s *Storage) WriteTitle(id string, title string) error {
+	q := "UPDATE collections SET title = $2 WHERE id = $1"
+	_, err := s.db.Exec(q, id, title)
+	return err
+}

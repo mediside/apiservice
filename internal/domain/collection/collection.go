@@ -13,6 +13,11 @@ type Collection struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
+type Update struct {
+	Title          *string  `json:"title,omitempty"`
+	PathologyLevel *float32 `json:"pathology_level,omitempty"`
+}
+
 type CollectionWithResearches struct {
 	Id             string                    `json:"id"`
 	Num            uint                      `json:"num"`

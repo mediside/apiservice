@@ -11,6 +11,7 @@ import (
 type collectionProvider interface {
 	Create() (collection.Collection, error)
 	Delete(id string) error
+	Update(id string, newFields collection.Update) error
 	List() ([]collection.Collection, error)
 	GetOne(id string) (collection.CollectionWithResearches, error)
 	CreateReport(id string) (*bytes.Buffer, error)
@@ -67,9 +68,29 @@ func (h *Handler) GetOne(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+func (h *Handler) Update(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "err"})
+		return
+	}
+
+	var update collection.Update
+	if err := ctx.ShouldBindJSON(&update); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid JSON"})
+		return
+	}
+
+	if err := h.collectionProvider.Update(id, update); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-
 	if id == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "err"})
 		return

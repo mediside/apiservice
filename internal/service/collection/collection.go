@@ -13,6 +13,8 @@ import (
 type collectionProvider interface {
 	Create(id string, pathologyLevel float32) (collection.Collection, error)
 	Delete(id string) error
+	WritePathologyLevel(id string, pathologyLevel float32) error
+	WriteTitle(id string, title string) error
 	List() ([]collection.Collection, error)
 	GetOne(id string) (collection.Collection, error)
 	CheckExists(id string) (bool, error)
@@ -59,6 +61,26 @@ func (s *Service) Delete(id string) error {
 	if err := s.collectionProvider.Delete(id); err != nil {
 		s.log.Error("delete collection", slog.String("id", id), slog.String("err", err.Error()))
 		return err
+	}
+
+	return nil
+}
+
+func (s *Service) Update(id string, update collection.Update) error {
+	if update.PathologyLevel != nil {
+		s.log.Info("update pathologyLevel of collection")
+		if err := s.collectionProvider.WritePathologyLevel(id, *update.PathologyLevel); err != nil {
+			s.log.Error("fail set pathology level", slog.String("collectionId", id))
+			return err
+		}
+	}
+
+	if update.Title != nil {
+		s.log.Info("update title of collection")
+		if err := s.collectionProvider.WriteTitle(id, *update.Title); err != nil {
+			s.log.Error("fail set title level", slog.String("collectionId", id))
+			return err
+		}
 	}
 
 	return nil
