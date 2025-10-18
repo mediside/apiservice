@@ -39,6 +39,10 @@ func (s *Service) processing(filename, collectionId string) {
 			}
 		}
 
+		if err := s.researchProvider.DeleteSingleFile(filepath); err != nil {
+			s.log.Warn("can't delete file", slog.String("err", err.Error()), slog.String("filepath", filepath))
+		} // оставляем запись в БД, но удаляем поврежденный файл
+
 		return // если не смогли сами прочитать архив, то не даем задачу на инференс
 	}
 	defer reader.Close()

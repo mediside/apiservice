@@ -84,6 +84,10 @@ func (s *Service) inferenceWorker() {
 			}
 		}
 
+		if err := s.researchProvider.DeleteSingleFile(t.Filepath); err != nil {
+			s.log.Warn("can't delete file", slog.String("err", err.Error()), slog.String("filepath", t.Filepath))
+		}
+
 		finishedAt := time.Now().UTC()
 		if err := s.researchProvider.WriteInferenceFinishTime(t.ResearchId, finishedAt); err != nil {
 			s.log.Error("fail write inference finish time in db", slog.String("err", err.Error()))

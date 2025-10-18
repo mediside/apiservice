@@ -141,25 +141,24 @@ func (s *Storage) List(collectionId string) ([]research.Research, error) {
 	return rs, nil
 }
 
-func (s *Storage) Delete(id string) error {
+func (s *Storage) DeleteSingleFile(filepath string) error {
+	return os.Remove(filepath)
+}
+
+func (s *Storage) GetFilepath(id string) (string, error) {
 	q := "SELECT file_path FROM researches WHERE id = $1"
 	var filepath string
-
 	err := s.db.QueryRow(q, id).Scan(&filepath)
-	if err == sql.ErrNoRows {
-		return nil // пока что считаем, что если не нашли запись, то это не ошибка
-	} else if err != nil {
-		return err
+	if err != nil {
+		return "", err
 	}
 
-	if err := os.Remove(filepath); err != nil {
-		return err
-	}
+	return filepath, nil
+}
 
-	// TODO: удалить папку, если она осталась пустой
-
-	q = "DELETE FROM researches WHERE file_path = $1"
-	_, err = s.db.Exec(q, filepath)
+func (s *Storage) DeleteEntry(filepath string) error {
+	q := "DELETE FROM researches WHERE file_path = $1"
+	_, err := s.db.Exec(q, filepath)
 	return err
 }
 
