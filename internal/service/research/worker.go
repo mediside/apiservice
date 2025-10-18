@@ -84,8 +84,15 @@ func (s *Service) inferenceWorker() {
 			}
 		}
 
-		if err := s.researchProvider.DeleteSingleFile(t.Filepath); err != nil {
-			s.log.Warn("can't delete file", slog.String("err", err.Error()), slog.String("filepath", t.Filepath))
+		if _, ok := s.counts[t.Filepath]; ok {
+			s.counts[t.Filepath] -= 1
+			if s.counts[t.Filepath] == 0 {
+				if err := s.researchProvider.DeleteSingleFile(t.Filepath); err != nil {
+					s.log.Warn("can't delete file", slog.String("err", err.Error()), slog.String("filepath", t.Filepath))
+				}
+			}
+		} else {
+			s.log.Warn("not found filepath in counts", slog.String("filepath", t.Filepath))
 		}
 
 		finishedAt := time.Now().UTC()

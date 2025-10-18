@@ -34,6 +34,10 @@ type Service struct {
 	taskCh            chan inference.InferenceTask
 	inferenceCh       chan inference.InferenceProgress // для отправки во внешний мир
 	updateCh          chan research.ResearchUpdate     // для общих обновлений в БД (кроме удаления)
+
+	// Количество исследований в одном файле. Нужно для предотвращения
+	// удаления файла после инференса, если в нем еще остались исследования
+	counts map[string]uint
 }
 
 func New(log *slog.Logger, cfg *config.Config, researchProvider researchProvider, inferenceProvider inferenceProvider) *Service {
@@ -45,6 +49,7 @@ func New(log *slog.Logger, cfg *config.Config, researchProvider researchProvider
 		taskCh:            make(chan inference.InferenceTask),
 		inferenceCh:       make(chan inference.InferenceProgress),
 		updateCh:          make(chan research.ResearchUpdate),
+		counts:            map[string]uint{},
 	}
 
 	go research.inferenceWorker()

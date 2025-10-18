@@ -54,6 +54,8 @@ func (s *Service) processing(filename, collectionId string) {
 			return
 		}
 
+		s.counts[filepath] += 1
+
 		s.updateCh <- research.ResearchUpdate{
 			Id:           researchId,
 			CollectionId: collectionId,
@@ -70,6 +72,7 @@ func (s *Service) processing(filename, collectionId string) {
 			Size:         size,
 			Metadata:     metadata,
 		}
+
 	}); err != nil {
 		return
 	}
