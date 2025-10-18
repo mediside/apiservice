@@ -13,6 +13,7 @@ import (
 type researchProvider interface {
 	RunFileProcessing(filename, collectionId string, src io.Reader) error
 	Delete(id string) error
+	CheckExists(collectionId, filename string) (bool, error)
 	UpdateCh() <-chan research.ResearchUpdate
 }
 
@@ -106,4 +107,40 @@ func (r *Handler) Delete(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+func (r *Handler) Check(ctx *gin.Context) {
+	collectionId := ctx.Query("collection_id")
+	if collectionId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "collection_id query param required"})
+		return
+	}
+
+	filename := ctx.Query("filename")
+	if filename == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "filename query param required"})
+		return
+	}
+
+	existsCollection, err := r.collectionProvider.CheckExists(collectionId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error find collection"})
+		return
+	}
+	if !existsCollection {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "collection not found"})
+		return
+	}
+
+	exists, err := r.researchProvider.CheckExists(collectionId, filename)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
+		return
+	}
+	if !exists {
+		ctx.JSON(http.StatusNotFound, gin.H{"exists": false, "message": "research with this filename not found in collection"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"exists": true, "message": "success"})
 }

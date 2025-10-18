@@ -37,6 +37,7 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 
 	researchApi := api.Group(("researches"))
 	researchApi.POST("/upload", researchHandler.Upload)
+	researchApi.GET("/check", researchHandler.Check)
 	researchApi.DELETE("/:id", researchHandler.Delete)
 	researchApi.GET("/update/ws/", researchHandler.Connect)
 

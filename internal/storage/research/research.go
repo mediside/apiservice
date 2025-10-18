@@ -167,3 +167,18 @@ func (s *Storage) DeleteFiles(subfolder string) error {
 	folderpath := s.researchSavePath + "/" + subfolder
 	return os.RemoveAll(folderpath)
 }
+
+func (s *Storage) CheckExists(collectionId, filename string) (bool, error) {
+	filepath := s.researchSavePath + "/" + collectionId + "/" + filename
+
+	q := "SELECT EXISTS(SELECT 1 FROM researches WHERE collection_id = $1 AND file_path = $2)"
+	row := s.db.QueryRow(q, collectionId, filepath)
+
+	var exists bool
+	err := row.Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}

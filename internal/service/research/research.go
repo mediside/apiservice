@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type InferenceProvider interface {
+type inferenceProvider interface {
 	DoInference(responseCh chan<- inference.InferenceResponse, filepath, studyId, seriesId string) error
 }
 
@@ -17,6 +17,7 @@ type researchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
 	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error
 	Delete(id string) error
+	CheckExists(collectionId, filename string) (bool, error)
 	WriteInferenceResult(id string, probabilityOfPathology float32) error
 	WriteInferenceError(id, inferenceErr string) error
 	WriteInferenceFinishTime(id string, finishedAt time.Time) error
@@ -27,13 +28,13 @@ type Service struct {
 	log               *slog.Logger
 	cfg               *config.Config
 	researchProvider  researchProvider
-	inferenceProvider InferenceProvider
+	inferenceProvider inferenceProvider
 	taskCh            chan inference.InferenceTask
 	inferenceCh       chan inference.InferenceProgress // для отправки во внешний мир
 	updateCh          chan research.ResearchUpdate     // для общих обновлений в БД (кроме удаления)
 }
 
-func New(log *slog.Logger, cfg *config.Config, researchProvider researchProvider, inferenceProvider InferenceProvider) *Service {
+func New(log *slog.Logger, cfg *config.Config, researchProvider researchProvider, inferenceProvider inferenceProvider) *Service {
 	research := &Service{
 		log:               log,
 		cfg:               cfg,
@@ -76,6 +77,16 @@ func (s *Service) Delete(id string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) CheckExists(collectionId, filename string) (bool, error) {
+	exists, err := s.researchProvider.CheckExists(collectionId, filename)
+	if err != nil {
+		s.log.Error("check exists", slog.String("collectionId", collectionId), slog.String("filename", filename), slog.String("err", err.Error()))
+		return false, err
+	}
+
+	return exists, nil
 }
 
 func (s *Service) InferenceCh() <-chan inference.InferenceProgress {
