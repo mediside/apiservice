@@ -54,7 +54,9 @@ func (s *Service) processing(filename, collectionId string) {
 			return
 		}
 
+		s.mu.Lock()
 		s.counts[filepath] += 1
+		s.mu.Unlock()
 
 		s.updateCh <- research.ResearchUpdate{
 			Id:           researchId,

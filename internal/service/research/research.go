@@ -6,6 +6,7 @@ import (
 	"apiservice/internal/domain/research"
 	"io"
 	"log/slog"
+	"sync"
 	"time"
 )
 
@@ -38,6 +39,7 @@ type Service struct {
 	// Количество исследований в одном файле. Нужно для предотвращения
 	// удаления файла после инференса, если в нем еще остались исследования
 	counts map[string]uint
+	mu     sync.Mutex // для защиты counts
 }
 
 func New(log *slog.Logger, cfg *config.Config, researchProvider researchProvider, inferenceProvider inferenceProvider) *Service {

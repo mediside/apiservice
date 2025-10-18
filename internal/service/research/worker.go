@@ -85,7 +85,12 @@ func (s *Service) inferenceWorker() {
 		}
 
 		if _, ok := s.counts[t.Filepath]; ok {
+			// В теории возможен сценарий, когда в одном файле 2 исследования, на первом инференс прошел очень быстро, а второе исследование сервис еще не успел найти
+			// В таком случае счетчик уменьшится до нуля, файл будет удален до инференса второго исследования
+			// Но на практике такая ситуация маловероятна
+			s.mu.Lock()
 			s.counts[t.Filepath] -= 1
+			s.mu.Unlock()
 			if s.counts[t.Filepath] == 0 {
 				if err := s.researchProvider.DeleteSingleFile(t.Filepath); err != nil {
 					s.log.Warn("can't delete file", slog.String("err", err.Error()), slog.String("filepath", t.Filepath))
