@@ -16,7 +16,7 @@ type inferenceProvider interface {
 type researchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
 	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error
-	DeleteEntry(filepath string) error
+	DeleteEntry(id string) error
 	DeleteSingleFile(filepath string) error
 	GetFilepath(id string) (string, error)
 	CheckExists(collectionId, filename string) (bool, error)
@@ -78,13 +78,7 @@ func (s *Service) RunFileProcessing(filename, collectionId string, src io.Reader
 }
 
 func (s *Service) Delete(id string) error {
-	filepath, err := s.researchProvider.GetFilepath(id)
-	if err != nil {
-		s.log.Error("fail get research filepath", slog.String("id", id), slog.String("err", err.Error()))
-		return err
-	}
-
-	if err := s.researchProvider.DeleteEntry(filepath); err != nil {
+	if err := s.researchProvider.DeleteEntry(id); err != nil {
 		s.log.Error("fail delete research entry", slog.String("id", id), slog.String("err", err.Error()))
 		return err
 	}

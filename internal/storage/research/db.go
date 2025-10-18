@@ -114,9 +114,9 @@ func (s *Storage) GetFilepath(id string) (string, error) {
 	return filepath, nil
 }
 
-func (s *Storage) DeleteEntry(filepath string) error {
-	q := "DELETE FROM researches WHERE file_path = $1"
-	_, err := s.db.Exec(q, filepath)
+func (s *Storage) DeleteEntry(id string) error {
+	q := "DELETE FROM researches WHERE id = $1"
+	_, err := s.db.Exec(q, id)
 	return err
 }
 
