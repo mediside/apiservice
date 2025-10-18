@@ -25,9 +25,9 @@ import (
 
 type Storage struct {
 	db                *sql.DB
-	CollectionStorage *collection.CollectionStorage
-	ResearchStorage   *research.ResearchStorage
-	InferenceStorage  *inference.InferenceStorage
+	CollectionStorage *collection.Storage
+	ResearchStorage   *research.Storage
+	InferenceStorage  *inference.Storage
 }
 
 func New(logger *slog.Logger, cfg *config.Config) Storage {

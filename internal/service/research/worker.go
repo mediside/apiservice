@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (s *ResearchService) inferenceWorker() {
+func (s *Service) inferenceWorker() {
 	s.log.Info("start inference worker")
 
 	for t := range s.taskCh {

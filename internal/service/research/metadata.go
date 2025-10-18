@@ -10,7 +10,7 @@ import (
 	"github.com/suyashkumar/dicom/pkg/tag"
 )
 
-func (s *ResearchService) readMetadatas(reader *zip.ReadCloser, setTask func(research.Metadata)) error {
+func (s *Service) readMetadatas(reader *zip.ReadCloser, setTask func(research.Metadata)) error {
 	uniqMetadatas := make(map[string]research.Metadata)
 
 	for _, f := range reader.File {

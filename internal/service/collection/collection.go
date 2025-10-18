@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type CollectionProvider interface {
+type collectionProvider interface {
 	Create(id string, pathologyLevel float32) (collection.Collection, error)
 	Delete(id string) error
 	List() ([]collection.Collection, error)
@@ -18,20 +18,20 @@ type CollectionProvider interface {
 	CheckExists(id string) (bool, error)
 }
 
-type ResearchProvider interface {
+type researchProvider interface {
 	List(collectionId string) ([]research.Research, error)
 	DeleteFiles(collectionId string) error
 }
 
-type CollectionService struct {
+type Service struct {
 	log                *slog.Logger
 	cfg                *config.Config
-	collectionProvider CollectionProvider
-	researchProvider   ResearchProvider
+	collectionProvider collectionProvider
+	researchProvider   researchProvider
 }
 
-func New(log *slog.Logger, cfg *config.Config, collectionProvider CollectionProvider, researchProvider ResearchProvider) *CollectionService {
-	return &CollectionService{
+func New(log *slog.Logger, cfg *config.Config, collectionProvider collectionProvider, researchProvider researchProvider) *Service {
+	return &Service{
 		log:                log,
 		cfg:                cfg,
 		collectionProvider: collectionProvider,
@@ -39,7 +39,7 @@ func New(log *slog.Logger, cfg *config.Config, collectionProvider CollectionProv
 	}
 }
 
-func (s *CollectionService) Create() (collection.Collection, error) {
+func (s *Service) Create() (collection.Collection, error) {
 	id := uuid.New().String()[:13] // чтобы имена папок с коллекциями были достаточно короткими
 	res, err := s.collectionProvider.Create(id, s.cfg.PathologyLevel)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *CollectionService) Create() (collection.Collection, error) {
 	return res, nil
 }
 
-func (s *CollectionService) Delete(id string) error {
+func (s *Service) Delete(id string) error {
 	if err := s.researchProvider.DeleteFiles(id); err != nil {
 		s.log.Error("delete collection files", slog.String("id", id), slog.String("err", err.Error()))
 		return err
@@ -64,7 +64,7 @@ func (s *CollectionService) Delete(id string) error {
 	return nil
 }
 
-func (s *CollectionService) List() ([]collection.Collection, error) {
+func (s *Service) List() ([]collection.Collection, error) {
 	list, err := s.collectionProvider.List()
 	if err != nil {
 		s.log.Error("list collection", slog.String("err", err.Error()))
@@ -74,7 +74,7 @@ func (s *CollectionService) List() ([]collection.Collection, error) {
 	return list, err
 }
 
-func (s *CollectionService) GetOne(id string) (collection.CollectionWithResearches, error) {
+func (s *Service) GetOne(id string) (collection.CollectionWithResearches, error) {
 	col, err := s.collectionProvider.GetOne(id)
 	if err != nil {
 		s.log.Error("get one collection", slog.String("err", err.Error()))
@@ -122,7 +122,7 @@ func (s *CollectionService) GetOne(id string) (collection.CollectionWithResearch
 	return fullColl, err
 }
 
-func (s *CollectionService) CheckExists(id string) (bool, error) {
+func (s *Service) CheckExists(id string) (bool, error) {
 	exists, err := s.collectionProvider.CheckExists(id)
 	if err != nil {
 		s.log.Error("check exists", slog.String("id", id), slog.String("err", err.Error()))

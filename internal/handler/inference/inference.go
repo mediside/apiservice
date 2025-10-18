@@ -9,25 +9,25 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type ResearchProvider interface {
+type researchProvider interface {
 	InferenceCh() <-chan inference.InferenceProgress
 }
 
-type InferenceHandler struct {
-	researchProvider ResearchProvider
+type Handler struct {
+	researchProvider researchProvider
 	inferenceCh      <-chan inference.InferenceProgress
 	upgrader         websocket.Upgrader
 	clients          map[*websocket.Conn]bool
 }
 
-func New(researchProvider ResearchProvider) *InferenceHandler {
+func New(researchProvider researchProvider) *Handler {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
-	infHandler := &InferenceHandler{
+	infHandler := &Handler{
 		researchProvider: researchProvider,
 		inferenceCh:      researchProvider.InferenceCh(),
 		upgrader:         upgrader,
@@ -39,7 +39,7 @@ func New(researchProvider ResearchProvider) *InferenceHandler {
 	return infHandler
 }
 
-func (h *InferenceHandler) Connect(ctx *gin.Context) {
+func (h *Handler) Connect(ctx *gin.Context) {
 	conn, err := h.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -49,7 +49,7 @@ func (h *InferenceHandler) Connect(ctx *gin.Context) {
 	h.clients[conn] = true
 }
 
-func (h *InferenceHandler) broadcastMessages() {
+func (h *Handler) broadcastMessages() {
 	for {
 		message := <-h.inferenceCh
 		data, err := json.Marshal(message)

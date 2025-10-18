@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func (h *ResearchHandler) Connect(ctx *gin.Context) {
+func (h *Handler) Connect(ctx *gin.Context) {
 	conn, err := h.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -18,7 +18,7 @@ func (h *ResearchHandler) Connect(ctx *gin.Context) {
 	h.clients[conn] = true
 }
 
-func (h *ResearchHandler) broadcastMessages() {
+func (h *Handler) broadcastMessages() {
 	for {
 		message := <-h.updateCh
 		data, err := json.Marshal(message)

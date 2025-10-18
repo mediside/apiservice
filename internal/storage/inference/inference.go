@@ -9,17 +9,17 @@ import (
 
 const eps = 0.0001
 
-type InferenceStorage struct {
+type Storage struct {
 	client infGRPC.InferenceClient
 }
 
-func New(client infGRPC.InferenceClient) *InferenceStorage {
-	return &InferenceStorage{
+func New(client infGRPC.InferenceClient) *Storage {
+	return &Storage{
 		client: client,
 	}
 }
 
-func (s *InferenceStorage) DoInference(responseCh chan<- inference.InferenceResponse, filepath, studyId, seriesId string) error {
+func (s *Storage) DoInference(responseCh chan<- inference.InferenceResponse, filepath, studyId, seriesId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 

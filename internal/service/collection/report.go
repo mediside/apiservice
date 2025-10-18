@@ -8,7 +8,7 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func (s *CollectionService) CreateReport(id string) (*bytes.Buffer, error) {
+func (s *Service) CreateReport(id string) (*bytes.Buffer, error) {
 	col, err := s.collectionProvider.GetOne(id)
 	if err != nil {
 		s.log.Error("get one collection", slog.String("err", err.Error()))

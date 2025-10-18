@@ -5,17 +5,17 @@ import (
 	"database/sql"
 )
 
-type CollectionStorage struct {
+type Storage struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) *CollectionStorage {
-	return &CollectionStorage{
+func New(db *sql.DB) *Storage {
+	return &Storage{
 		db: db,
 	}
 }
 
-func (s *CollectionStorage) Create(id string, pathologyLevel float32) (collection.Collection, error) {
+func (s *Storage) Create(id string, pathologyLevel float32) (collection.Collection, error) {
 	q := `INSERT INTO collections (id,pathology_level) VALUES ($1,$2)
 				RETURNING id,num,title,pathology_level,created_at`
 
@@ -24,13 +24,13 @@ func (s *CollectionStorage) Create(id string, pathologyLevel float32) (collectio
 	return s.scanRow(row.Scan)
 }
 
-func (s *CollectionStorage) Delete(id string) error {
+func (s *Storage) Delete(id string) error {
 	q := "DELETE FROM collections WHERE id = $1"
 	_, err := s.db.Exec(q, id)
 	return err
 }
 
-func (s *CollectionStorage) List() ([]collection.Collection, error) {
+func (s *Storage) List() ([]collection.Collection, error) {
 	q := "SELECT * FROM collections"
 	rows, err := s.db.Query(q)
 	if err != nil {
@@ -51,7 +51,7 @@ func (s *CollectionStorage) List() ([]collection.Collection, error) {
 	return res, nil
 }
 
-func (s *CollectionStorage) CheckExists(id string) (bool, error) {
+func (s *Storage) CheckExists(id string) (bool, error) {
 	q := "SELECT EXISTS(SELECT 1 FROM collections WHERE id = $1)"
 	row := s.db.QueryRow(q, id)
 
@@ -64,13 +64,13 @@ func (s *CollectionStorage) CheckExists(id string) (bool, error) {
 	return exists, nil
 }
 
-func (s *CollectionStorage) GetOne(id string) (collection.Collection, error) {
+func (s *Storage) GetOne(id string) (collection.Collection, error) {
 	q := "SELECT * FROM collections WHERE id = $1"
 	row := s.db.QueryRow(q, id)
 	return s.scanRow(row.Scan)
 }
 
-func (s *CollectionStorage) scanRow(scanFn func(dest ...any) error) (collection.Collection, error) {
+func (s *Storage) scanRow(scanFn func(dest ...any) error) (collection.Collection, error) {
 	var (
 		res   collection.Collection
 		title sql.NullString

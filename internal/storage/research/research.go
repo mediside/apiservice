@@ -8,19 +8,19 @@ import (
 	"time"
 )
 
-type ResearchStorage struct {
+type Storage struct {
 	researchSavePath string
 	db               *sql.DB
 }
 
-func New(researchSavePath string, db *sql.DB) *ResearchStorage {
-	return &ResearchStorage{
+func New(researchSavePath string, db *sql.DB) *Storage {
+	return &Storage{
 		researchSavePath: researchSavePath,
 		db:               db,
 	}
 }
 
-func (s *ResearchStorage) SaveFile(subfolder, filename string, src io.Reader) error {
+func (s *Storage) SaveFile(subfolder, filename string, src io.Reader) error {
 	folderpath := s.researchSavePath + "/" + subfolder
 	if err := os.MkdirAll(folderpath, os.ModePerm); err != nil {
 		return err
@@ -44,7 +44,7 @@ func (s *ResearchStorage) SaveFile(subfolder, filename string, src io.Reader) er
 	return nil
 }
 
-func (s *ResearchStorage) Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error {
+func (s *Storage) Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error {
 	var err error = nil
 	if archiveCorrupt {
 		q := "INSERT INTO researches (id,collection_id,file_path,archive_size,archive_corrupt) VALUES ($1,$2,$3,$4,$5)"
@@ -57,31 +57,31 @@ func (s *ResearchStorage) Create(id, collectionId, filepath string, size int64, 
 	return err
 }
 
-func (s *ResearchStorage) WriteInferenceResult(id string, probabilityOfPathology float32) error {
+func (s *Storage) WriteInferenceResult(id string, probabilityOfPathology float32) error {
 	q := "UPDATE researches SET probability_of_pathology = $2 WHERE id = $1"
 	_, err := s.db.Exec(q, id, probabilityOfPathology)
 	return err
 }
 
-func (s *ResearchStorage) WriteInferenceError(id, inferenceErr string) error {
+func (s *Storage) WriteInferenceError(id, inferenceErr string) error {
 	q := "UPDATE researches SET inference_error = $2 WHERE id = $1"
 	_, err := s.db.Exec(q, id, inferenceErr)
 	return err
 }
 
-func (s *ResearchStorage) WriteInferenceFinishTime(id string, finishedAt time.Time) error {
+func (s *Storage) WriteInferenceFinishTime(id string, finishedAt time.Time) error {
 	q := "UPDATE researches SET processing_finished_at = $2 WHERE id = $1"
 	_, err := s.db.Exec(q, id, finishedAt)
 	return err
 }
 
-func (s *ResearchStorage) WriteInferenceStartTime(id string, startedAt time.Time) error {
+func (s *Storage) WriteInferenceStartTime(id string, startedAt time.Time) error {
 	q := "UPDATE researches SET processing_started_at = $2 WHERE id = $1"
 	_, err := s.db.Exec(q, id, startedAt)
 	return err
 }
 
-func (s *ResearchStorage) List(collectionId string) ([]research.Research, error) {
+func (s *Storage) List(collectionId string) ([]research.Research, error) {
 	q := `SELECT r.id, r.file_path, r.archive_size, r.assessment, r.archive_corrupt, r.probability_of_pathology,
 				r.created_at, r.processing_started_at, r.processing_finished_at, r.study_id, r.series_id, r.files_count, r.inference_error
 				FROM researches as r WHERE collection_id = $1 ORDER BY created_at ASC`
@@ -141,7 +141,7 @@ func (s *ResearchStorage) List(collectionId string) ([]research.Research, error)
 	return rs, nil
 }
 
-func (s *ResearchStorage) Delete(id string) error {
+func (s *Storage) Delete(id string) error {
 	q := "SELECT file_path FROM researches WHERE id = $1"
 	var filepath string
 
@@ -163,7 +163,7 @@ func (s *ResearchStorage) Delete(id string) error {
 	return err
 }
 
-func (s *ResearchStorage) DeleteFiles(subfolder string) error {
+func (s *Storage) DeleteFiles(subfolder string) error {
 	folderpath := s.researchSavePath + "/" + subfolder
 	return os.RemoveAll(folderpath)
 }

@@ -10,32 +10,32 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type ResearchProvider interface {
+type researchProvider interface {
 	RunFileProcessing(filename, collectionId string, src io.Reader) error
 	Delete(id string) error
 	UpdateCh() <-chan research.ResearchUpdate
 }
 
-type CollectionProvider interface {
+type collectionProvider interface {
 	CheckExists(id string) (bool, error)
 }
 
-type ResearchHandler struct {
-	researchProvider   ResearchProvider
-	collectionProvider CollectionProvider
+type Handler struct {
+	researchProvider   researchProvider
+	collectionProvider collectionProvider
 	updateCh           <-chan research.ResearchUpdate
 	upgrader           websocket.Upgrader
 	clients            map[*websocket.Conn]bool
 }
 
-func New(researchProvider ResearchProvider, collectionProvider CollectionProvider) *ResearchHandler {
+func New(researchProvider researchProvider, collectionProvider collectionProvider) *Handler {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
-	resHandler := &ResearchHandler{
+	resHandler := &Handler{
 		researchProvider:   researchProvider,
 		collectionProvider: collectionProvider,
 		updateCh:           researchProvider.UpdateCh(),
@@ -48,7 +48,7 @@ func New(researchProvider ResearchProvider, collectionProvider CollectionProvide
 	return resHandler
 }
 
-func (r *ResearchHandler) Upload(ctx *gin.Context) {
+func (r *Handler) Upload(ctx *gin.Context) {
 	collectionId := ctx.Query("collection_id")
 	if collectionId == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "collection_id query param required"})
@@ -92,7 +92,7 @@ func (r *ResearchHandler) Upload(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{"message": "success", "count": len(files)})
 }
 
-func (r *ResearchHandler) Delete(ctx *gin.Context) {
+func (r *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	if id == "" {

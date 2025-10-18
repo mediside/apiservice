@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CollectionProvider interface {
+type collectionProvider interface {
 	Create() (collection.Collection, error)
 	Delete(id string) error
 	List() ([]collection.Collection, error)
@@ -16,17 +16,17 @@ type CollectionProvider interface {
 	CreateReport(id string) (*bytes.Buffer, error)
 }
 
-type CollectionHandler struct {
-	collectionProvider CollectionProvider
+type Handler struct {
+	collectionProvider collectionProvider
 }
 
-func New(collectionProvider CollectionProvider) *CollectionHandler {
-	return &CollectionHandler{
+func New(collectionProvider collectionProvider) *Handler {
+	return &Handler{
 		collectionProvider: collectionProvider,
 	}
 }
 
-func (h *CollectionHandler) Add(ctx *gin.Context) {
+func (h *Handler) Add(ctx *gin.Context) {
 	res, err := h.collectionProvider.Create()
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
@@ -36,7 +36,7 @@ func (h *CollectionHandler) Add(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (h *CollectionHandler) List(ctx *gin.Context) {
+func (h *Handler) List(ctx *gin.Context) {
 	list, err := h.collectionProvider.List()
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "err"})
@@ -50,7 +50,7 @@ func (h *CollectionHandler) List(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, list)
 }
 
-func (h *CollectionHandler) GetOne(ctx *gin.Context) {
+func (h *Handler) GetOne(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	if id == "" {
@@ -67,7 +67,7 @@ func (h *CollectionHandler) GetOne(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (h *CollectionHandler) Delete(ctx *gin.Context) {
+func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	if id == "" {
@@ -83,7 +83,7 @@ func (h *CollectionHandler) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
-func (h *CollectionHandler) Report(ctx *gin.Context) {
+func (h *Handler) Report(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	if id == "" {

@@ -9,8 +9,8 @@ import (
 )
 
 type Service struct {
-	CollectionService *collection.CollectionService
-	ResearchService   *research.ResearchService
+	CollectionService *collection.Service
+	ResearchService   *research.Service
 }
 
 func New(log *slog.Logger, cfg *config.Config, repo storage.Storage) Service {

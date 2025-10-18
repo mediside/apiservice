@@ -13,7 +13,7 @@ type InferenceProvider interface {
 	DoInference(responseCh chan<- inference.InferenceResponse, filepath, studyId, seriesId string) error
 }
 
-type ResearchProvider interface {
+type researchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
 	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error
 	Delete(id string) error
@@ -23,18 +23,18 @@ type ResearchProvider interface {
 	WriteInferenceStartTime(id string, startedAt time.Time) error
 }
 
-type ResearchService struct {
+type Service struct {
 	log               *slog.Logger
 	cfg               *config.Config
-	researchProvider  ResearchProvider
+	researchProvider  researchProvider
 	inferenceProvider InferenceProvider
 	taskCh            chan inference.InferenceTask
 	inferenceCh       chan inference.InferenceProgress // для отправки во внешний мир
 	updateCh          chan research.ResearchUpdate     // для общих обновлений в БД (кроме удаления)
 }
 
-func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider, inferenceProvider InferenceProvider) *ResearchService {
-	research := &ResearchService{
+func New(log *slog.Logger, cfg *config.Config, researchProvider researchProvider, inferenceProvider InferenceProvider) *Service {
+	research := &Service{
 		log:               log,
 		cfg:               cfg,
 		researchProvider:  researchProvider,
@@ -49,7 +49,7 @@ func New(log *slog.Logger, cfg *config.Config, researchProvider ResearchProvider
 	return research
 }
 
-func (s *ResearchService) RunFileProcessing(filename, collectionId string, src io.Reader) error {
+func (s *Service) RunFileProcessing(filename, collectionId string, src io.Reader) error {
 	// загруженный файл сохраняем в любом случае, чтобы он отображался в статистике
 	// даже если он не валидный, чтобы было видно пользователю, что файл загрузился, но не читается
 	if err := s.researchProvider.SaveFile(collectionId, filename, src); err == research.ErrFileAlreadyExists {
@@ -69,7 +69,7 @@ func (s *ResearchService) RunFileProcessing(filename, collectionId string, src i
 	return nil
 }
 
-func (s *ResearchService) Delete(id string) error {
+func (s *Service) Delete(id string) error {
 	if err := s.researchProvider.Delete(id); err != nil {
 		s.log.Error("delete collection", slog.String("err", err.Error()))
 		return err
@@ -78,10 +78,10 @@ func (s *ResearchService) Delete(id string) error {
 	return nil
 }
 
-func (s *ResearchService) InferenceCh() <-chan inference.InferenceProgress {
+func (s *Service) InferenceCh() <-chan inference.InferenceProgress {
 	return s.inferenceCh
 }
 
-func (s *ResearchService) UpdateCh() <-chan research.ResearchUpdate {
+func (s *Service) UpdateCh() <-chan research.ResearchUpdate {
 	return s.updateCh
 }

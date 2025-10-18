@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *ResearchService) processing(filename, collectionId string) {
+func (s *Service) processing(filename, collectionId string) {
 	filepath := s.cfg.ResearchSavePath + "/" + collectionId + "/" + filename
 
 	fileInfo, err := os.Stat(filepath)
