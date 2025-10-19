@@ -49,6 +49,8 @@ func (s *Service) Create() (collection.Collection, error) {
 		return collection.Collection{}, err
 	}
 
+	res.Folder = s.cfg.ResearchSavePath + "/" + res.Id // TODO: убрать частичное заполнение полей
+
 	return res, nil
 }
 
@@ -91,6 +93,10 @@ func (s *Service) List() ([]collection.Collection, error) {
 	if err != nil {
 		s.log.Error("list collection", slog.String("err", err.Error()))
 		return nil, err
+	}
+
+	for k := range list {
+		list[k].Folder = s.cfg.ResearchSavePath + "/" + list[k].Id
 	}
 
 	return list, err
@@ -136,6 +142,7 @@ func (s *Service) GetOne(id string) (collection.CollectionWithResearches, error)
 		Id:             col.Id,
 		Num:            col.Num,
 		Title:          col.Title,
+		Folder:         s.cfg.ResearchSavePath + "/" + col.Id,
 		PathologyLevel: col.PathologyLevel,
 		CreatedAt:      col.CreatedAt,
 		Researches:     researches,
