@@ -95,6 +95,7 @@ func (s *Service) inferenceWorker() {
 				if err := s.researchProvider.DeleteSingleFile(t.Filepath); err != nil {
 					s.log.Warn("can't delete file", slog.String("err", err.Error()), slog.String("filepath", t.Filepath))
 				}
+				delete(s.counts, t.Filepath)
 			}
 		} else {
 			s.log.Warn("not found filepath in counts", slog.String("filepath", t.Filepath))
