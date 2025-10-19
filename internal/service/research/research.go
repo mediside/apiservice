@@ -87,12 +87,12 @@ func (s *Service) RunFolderProcessing(collectionId string) error {
 		return err
 	}
 
-	// в отличие от метода RunFileProcessing здесь нет необходимости нагружать планировщик множеством горутин
-	go func() {
-		for _, f := range filenames {
-			s.processing(f, collectionId)
-		}
-	}()
+	// в отличие от метода RunFileProcessing здесь лучше выполнить запрос синхронно, чтобы пользователь
+	// видел лоадер на кнопке. Все равно, как только у него появятся исследования, кнопка скроется,
+	// а дальше уже и не важно, чем закончится этот запрос
+	for _, f := range filenames {
+		s.processing(f, collectionId)
+	}
 
 	return nil
 }
