@@ -3,19 +3,31 @@ package collection
 import (
 	"apiservice/internal/domain/collection"
 	"database/sql"
+	"os"
 )
 
 type Storage struct {
-	db *sql.DB
+	savePath string
+	db       *sql.DB
 }
 
-func New(db *sql.DB) *Storage {
+func New(savePath string, db *sql.DB) *Storage {
 	return &Storage{
-		db: db,
+		savePath: savePath,
+		db:       db,
 	}
 }
 
 func (s *Storage) Create(id string, pathologyLevel float32) (collection.Collection, error) {
+	// TODO: разбить на подпакеты работу с файловой системой и базой данных
+	folderpath := s.savePath + "/" + id
+	if _, err := os.Stat(folderpath); os.IsNotExist(err) {
+		err := os.MkdirAll(folderpath, 0755)
+		if err != nil {
+			return collection.Collection{}, err
+		}
+	}
+
 	q := `INSERT INTO collections (id,pathology_level) VALUES ($1,$2)
 				RETURNING id,num,title,pathology_level,created_at`
 

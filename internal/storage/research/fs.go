@@ -38,3 +38,26 @@ func (s *Storage) DeleteFiles(subfolder string) error {
 	folderpath := s.researchSavePath + "/" + subfolder
 	return os.RemoveAll(folderpath)
 }
+
+func (s *Storage) GetFilenames(subfolder string) ([]string, error) {
+	folderpath := s.researchSavePath + "/" + subfolder
+
+	if _, err := os.Stat(folderpath); os.IsNotExist(err) {
+		err := os.MkdirAll(folderpath, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	entries, err := os.ReadDir(folderpath)
+	if err != nil {
+		return nil, err
+	}
+
+	filenames := make([]string, len(entries))
+	for i, entry := range entries {
+		filenames[i] = entry.Name()
+	}
+
+	return filenames, nil
+}

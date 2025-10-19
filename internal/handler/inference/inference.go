@@ -11,6 +11,7 @@ import (
 
 type researchProvider interface {
 	InferenceCh() <-chan inference.InferenceProgress
+	RunFolderProcessing(collectionId string) error
 }
 
 type Handler struct {
@@ -64,4 +65,19 @@ func (h *Handler) broadcastMessages() {
 			}
 		}
 	}
+}
+
+func (h *Handler) RunOnFolder(ctx *gin.Context) {
+	collectionId := ctx.Query("collection_id")
+	if collectionId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "collection_id query param required"})
+		return
+	}
+
+	if err := h.researchProvider.RunFolderProcessing(collectionId); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "cannot run folder processing"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 }

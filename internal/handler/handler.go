@@ -44,6 +44,7 @@ func New(log *slog.Logger, cfg *config.Config, serv service.Service) http.Handle
 
 	inferenceApi := api.Group("/inference")
 	inferenceApi.GET("/progress/ws/", inferenceHandler.Connect)
+	inferenceApi.POST("/folder", inferenceHandler.RunOnFolder)
 
 	return router
 }

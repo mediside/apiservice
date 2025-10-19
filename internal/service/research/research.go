@@ -16,6 +16,7 @@ type inferenceProvider interface {
 
 type researchProvider interface {
 	SaveFile(collectionId, filename string, src io.Reader) error
+	GetFilenames(collectionId string) ([]string, error)
 	Create(id, collectionId, filepath string, size int64, archiveCorrupt bool, metadata research.Metadata) error
 	DeleteEntry(id string) error
 	DeleteSingleFile(filepath string) error
@@ -75,6 +76,23 @@ func (s *Service) RunFileProcessing(filename, collectionId string, src io.Reader
 	// горутина нужна, чтобы не блокировать HTTP-вызов
 	// она сохранит контекст и встанет дожидаться очереди на отправку задачи
 	go s.processing(filename, collectionId)
+
+	return nil
+}
+
+func (s *Service) RunFolderProcessing(collectionId string) error {
+	filenames, err := s.researchProvider.GetFilenames(collectionId)
+	if err != nil {
+		s.log.Error("fail get filenames", slog.String("err", err.Error()), slog.String("collectionId", collectionId))
+		return err
+	}
+
+	// в отличие от метода RunFileProcessing здесь нет необходимости нагружать планировщик множеством горутин
+	go func() {
+		for _, f := range filenames {
+			s.processing(f, collectionId)
+		}
+	}()
 
 	return nil
 }
